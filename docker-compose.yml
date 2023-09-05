@@ -22,6 +22,13 @@ services:
         - "traefik.http.routers.prometheus.service=prometheus"
         - "traefik.http.routers.prometheus.middlewares=noauth-chain@file"
         - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+        - homepage.group=Metrics
+        - homepage.name=Prometheus
+        - homepage.icon=prometheus.png
+        - homepage.href=https://prometheus.${DOMAIN_SWARM}:4/
+        - homepage.description=Prometheus
+        - homepage.ping=http://prometheus:3000
+        - homepage.weight=1
       mode: replicated
       replicas: 1
       placement:
@@ -29,6 +36,40 @@ services:
           - node.labels.type == vm
           - node.labels.metrics == true
 
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    networks: [network_cluster]
+    restart: on-failure
+    environment:
+      # 直接使用Portainer容器内的环境变量
+      PUID: 1000
+      PGID: 1000       
+      TZ: ${TZ}
+    volumes:
+      - nfs_grafana_data:/var/lib/grafana
+      - nfs_grafana_conf:/usr/share/grafana/conf
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_SWARM}`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.service=grafana"
+        - "traefik.http.routers.grafana.middlewares=noauth-chain@file"
+        - "traefik.http.services.grafana.loadbalancer.server.port=30000"
+        - homepage.group=Metrics
+        - homepage.name=Grafana
+        - homepage.icon=grafana.png
+        - homepage.href=https://grafana.${DOMAIN_SWARM}:4/
+        - homepage.description=Grafana
+        - homepage.ping=http://grafana:3000
+        - homepage.weight=1
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.type == vm
+          - node.labels.metrics == true
 networks:
   network_cluster:
     external: true
@@ -44,3 +85,13 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/prometheus  
+  nfs_grafana_data:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/grafana/data        
+  nfs_grafana_conf:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/grafana/conf         
