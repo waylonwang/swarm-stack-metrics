@@ -2,42 +2,6 @@
 version: "3.4"
 
 services:
-  # Prometheus
-  prometheus:
-    image: prom/prometheus:latest
-    command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.enable-lifecycle --web.console.templates=/usr/share/prometheus/consoles
-    networks: [network_cluster]
-    restart: on-failure
-    environment:
-      # 直接使用Portainer容器内的环境变量
-      PUID: 1000
-      PGID: 1000       
-      TZ: ${TZ}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - nfs_prometheus:/etc/prometheus
-    deploy:
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN_SWARM}`)"
-        - "traefik.http.routers.prometheus.entrypoints=websecure"
-        - "traefik.http.routers.prometheus.service=prometheus"
-        - "traefik.http.routers.prometheus.middlewares=noauth-chain@file"
-        - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-        - homepage.group=Metrics
-        - homepage.name=Prometheus
-        - homepage.icon=prometheus.png
-        - homepage.href=https://prometheus.${DOMAIN_SWARM}:4/
-        - homepage.description=Prometheus
-        - homepage.ping=http://prometheus:3000
-        - homepage.weight=1
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
-
   # Grafana
   grafana:
     image: grafana/grafana:latest
@@ -72,6 +36,114 @@ services:
         constraints:
           - node.labels.type == vm
           - node.labels.metrics == true
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M     
+          
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.enable-lifecycle --web.console.templates=/usr/share/prometheus/consoles
+    networks: [network_cluster]
+    restart: on-failure
+    environment:
+      # 直接使用Portainer容器内的环境变量
+      PUID: 1000
+      PGID: 1000       
+      TZ: ${TZ}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - nfs_prometheus:/etc/prometheus
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN_SWARM}`)
+        - traefik.http.routers.prometheus.entrypoints=websecure
+        - traefik.http.routers.prometheus.service=prometheus
+        - traefik.http.routers.prometheus.middlewares=noauth-chain@file
+        - traefik.http.services.prometheus.loadbalancer.server.port=9090
+        - homepage.group=Metrics
+        - homepage.name=Prometheus
+        - homepage.icon=prometheus.png
+        - homepage.href=https://prometheus.${DOMAIN_SWARM}:4/
+        - homepage.description=Prometheus
+        - homepage.ping=http://prometheus:9090
+        - homepage.weight=2
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.type == vm
+          - node.labels.metrics == true
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M          
+
+  # AlertManager
+  alertmanager:
+    image: prom/alertmanager:latest
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    networks: [network_cluster]
+    restart: on-failure
+    environment:   
+      TZ: ${TZ}
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == vm
+          - node.labels.metrics == true
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN_SWARM}`)
+        - traefik.http.routers.alertmanager.entrypoints=websecure
+        - traefik.http.routers.alertmanager.service=alertmanager
+        - traefik.http.routers.alertmanager.middlewares=noauth-chain@file
+        - traefik.http.services.alertmanager.loadbalancer.server.port=9093
+        - homepage.group=Metrics
+        - homepage.name=AlertManager
+        - homepage.icon=alertmanager.png
+        - homepage.href=https://alertmanager.${DOMAIN_SWARM}:4/
+        - homepage.description=Prometheus Alert Manager
+        - homepage.ping=http://alertmanager:9093
+        - homepage.weight=3
+
+  nodeexporter:
+    image: prom/node-exporter:latest
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    networks: [network_cluster]
+    restart: on-failure
+    environment:   
+      TZ: ${TZ}
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /etc/hostname:/etc/nodename
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.platform.os == linux      
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   # Cadvisor
   # cadvisor:
