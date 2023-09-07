@@ -22,7 +22,7 @@ services:
         - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN_SWARM}`)"
         - "traefik.http.routers.prometheus.entrypoints=websecure"
         - "traefik.http.routers.prometheus.service=prometheus"
-        - "traefik.http.routers.prometheus.middlewares=noauth-chain@file"
+        - "traefik.http.routers.prometheus.middlewares=auth-chain@file"
         - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
         - homepage.group=Metrics
         - homepage.name=Prometheus
@@ -72,6 +72,27 @@ services:
         constraints:
           - node.labels.type == vm
           - node.labels.metrics == true
+
+  # Cadvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    networks: [network_cluster]
+    restart: on-failure    
+    ports:
+      - "8888:8080"    
+    environment:
+      - TZ: ${TZ}
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro  
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.platform.os == linux
+
 networks:
   network_cluster:
     external: true
