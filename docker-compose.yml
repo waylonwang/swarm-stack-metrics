@@ -22,7 +22,7 @@ services:
         - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN_SWARM}`)"
         - "traefik.http.routers.prometheus.entrypoints=websecure"
         - "traefik.http.routers.prometheus.service=prometheus"
-        - "traefik.http.routers.prometheus.middlewares=auth-chain@file"
+        - "traefik.http.routers.prometheus.middlewares=noauth-chain@file"
         - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
         - homepage.group=Metrics
         - homepage.name=Prometheus
