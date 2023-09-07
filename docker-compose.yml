@@ -78,7 +78,7 @@ services:
     image: google/cadvisor
     networks: [network_cluster]
     devices:
-      - "/dev/kmsg"
+      - /dev/kmsg:/dev/kmsg
     restart: on-failure    
     ports:
       - "8888:8080"    
