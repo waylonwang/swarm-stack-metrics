@@ -75,7 +75,7 @@ services:
 
   # Cadvisor
   cadvisor:
-    image: docker:19.0.3
+    image: docker
     entrypoint: ["/bin/sh","-c"]
     command:
     - |
