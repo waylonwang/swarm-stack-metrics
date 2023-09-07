@@ -81,7 +81,7 @@ services:
     ports:
       - "8888:8080"    
     environment:
-      - TZ: ${TZ}
+      TZ: ${TZ}
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
