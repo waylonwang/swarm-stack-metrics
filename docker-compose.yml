@@ -74,26 +74,26 @@ services:
           - node.labels.metrics == true
 
   # Cadvisor
-  cadvisor:
-    image: google/cadvisor
-    networks: [network_cluster]
-    devices:
-      - /dev/kmsg:/dev/kmsg
-    restart: on-failure    
-    ports:
-      - "8888:8080"    
-    environment:
-      TZ: ${TZ}
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro  
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - node.platform.os == linux
+  # cadvisor:
+  #   image: google/cadvisor
+  #   networks: [network_cluster]
+  #   devices:
+  #     - /dev/kmsg:/dev/kmsg
+  #   restart: on-failure    
+  #   ports:
+  #     - "8888:8080"    
+  #   environment:
+  #     TZ: ${TZ}
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run:/var/run:rw
+  #     - /sys:/sys:ro
+  #     - /var/lib/docker/:/var/lib/docker:ro  
+  #   deploy:
+  #     mode: global
+  #     placement:
+  #       constraints:
+  #         - node.platform.os == linux
 
 networks:
   network_cluster:
