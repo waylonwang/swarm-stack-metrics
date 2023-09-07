@@ -75,18 +75,30 @@ services:
 
   # Cadvisor
   cadvisor:
-    image: google/cadvisor
+    image: docker:19.0.3
+    entrypoint: ["/bin/sh","-c"]
+    command:
+    - |
+      exec docker run -d --network="container:$${PARENT}" \
+            --env=TZ=$${TZ} \
+            --volume=/:/rootfs:ro \
+            --volume=/var/run:/var/run:ro  \
+            --volume=/var/run/docker.sock:/var/run/docker.sock:ro \
+            --volume=/sys:/sys:ro  \
+            --volume=/var/lib/docker/:/var/lib/docker:ro \
+            --volume=/dev/disk/:/dev/disk:ro \
+            --name $${CHILDNAME} \
+            --privileged \
+            --device=/dev/kmsg \
+            cjie001/cadvisor:0.37.5 -docker_only          
     networks: [network_cluster]
-    restart: on-failure    
-    ports:
-      - "8888:8080"    
     environment:
-      TZ: ${TZ}
+      - PARENT={{.Task.Name}}
+      - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
+      - CADVISOR_VERSION=v0.37.5
+      - TZ=${TZ}
     volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro  
+        - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       mode: global
       placement:
