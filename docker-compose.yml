@@ -75,7 +75,7 @@ services:
 
   # Cadvisor
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    image: google/cadvisor
     networks: [network_cluster]
     restart: on-failure    
     ports:
