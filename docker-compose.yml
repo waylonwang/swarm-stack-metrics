@@ -93,6 +93,8 @@ services:
     restart: on-failure
     environment:   
       TZ: ${TZ}
+    volumes:
+      - nfs_alertmanager:/etc/alertmanager
     deploy:
       placement:
         constraints:
@@ -214,6 +216,11 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/prometheus  
+  nfs_alertmanager:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/alertmanager        
   nfs_grafana_data:
     driver: local
     driver_opts:
