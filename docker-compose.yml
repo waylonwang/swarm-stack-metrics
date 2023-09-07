@@ -94,6 +94,38 @@ services:
   #     placement:
   #       constraints:
   #         - node.platform.os == linux
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    command: -logtostderr -docker_only
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    volumes:
+      - type: bind
+        source: /
+        target: /rootfs
+        read_only: true
+      - type: bind
+        source: /var/run
+        target: /var/run
+        read_only: true
+      - type: bind
+        source: /sys
+        target: /sys
+        read_only: true
+      - type: bind
+        source: /var/lib/docker
+        target: /var/lib/docker
+        read_only: true
+      - type: bind
+        source: /dev/disk
+        target: /dev/disk
+        read_only: true                        
+    networks: [network_cluster]
 
 networks:
   network_cluster:
