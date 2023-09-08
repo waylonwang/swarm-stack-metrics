@@ -177,16 +177,18 @@ services:
   #           --privileged \
   #           --device=/dev/kmsg \
   #           cjie001/cadvisor:0.37.5
+
   # Cadvisor
   cadvisor:
-    image: starlingx/cadvisor:master-debian-stable-latest
+    # image: registry.cloudvalley.name:4/cadvisor:v0.47.3
     # image: registry.cloudvalley.name:4/cadvisor:v0.44.0
+    image: starlingx/cadvisor:master-debian-stable-latest
     networks: [network_cluster]
     devices:
-      - /dev/kmsg:/dev/kmsg
-    restart: on-failure    
+      - /dev/kmsg
+    restart: on-failure
     ports:
-      - "8888:8080"    
+      - "8080:8080"    
     environment:
       TZ: ${TZ}
     volumes:
