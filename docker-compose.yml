@@ -149,91 +149,59 @@ services:
         reservations:
           memory: 64M
 
-  # cadvisor:
-  #   image: docker
-  #   volumes: 
-  #       - /var/run/docker.sock:/var/run/docker.sock
-  #   entrypoint: ["/bin/sh","-c"]
-  #   networks: [network_cluster]
-  #   deploy:
-  #     mode: global
-  #     restart_policy:
-  #       condition: none
-  #   environment:
-  #     - TZ=Asia/Shanghai
-  #     - PARENT={{.Task.Name}}
-  #     - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
-  #   command: 
-  #   - |
-  #     exec docker run -i --rm --network="container:$${PARENT}" \
-  #           --env=TZ=Asia/Shanghai \
-  #           --volume=/:/rootfs:ro \
-  #           --volume=/var/run:/var/run:ro  \
-  #           --volume=/var/run/docker.sock:/var/run/docker.sock:ro \
-  #           --volume=/sys:/sys:ro  \
-  #           --volume=/var/lib/docker/:/var/lib/docker:ro \
-  #           --volume=/dev/disk/:/dev/disk:ro \
-  #           --name $${CHILDNAME} \
-  #           --privileged \
-  #           --device=/dev/kmsg \
-  #           cjie001/cadvisor:0.37.5
-
-  # Cadvisor
   cadvisor:
-    # image: registry.cloudvalley.name:4/cadvisor:v0.47.3
-    # image: registry.cloudvalley.name:4/cadvisor:v0.44.0
-    image: starlingx/cadvisor:master-debian-stable-latest
+    image: docker
+    volumes: 
+        - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["/bin/sh","-c"]
     networks: [network_cluster]
-    devices:
-      - /dev/kmsg
-    restart: on-failure
-    ports:
-      - "8080:8080"    
-    environment:
-      TZ: ${TZ}
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro  
-      - /dev/disk:/dev/disk:ro
     deploy:
       mode: global
-      placement:
-        constraints:
-          - node.platform.os == linux
+      restart_policy:
+        condition: none
+    environment:
+      - TZ=Asia/Shanghai
+      - PARENT={{.Task.Name}}
+      - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
+    command: 
+    - |
+      exec docker run -i --rm --network="container:$${PARENT}" \
+            --env=TZ=Asia/Shanghai \
+            --volume=/:/rootfs:ro \
+            --volume=/var/run:/var/run:ro  \
+            --volume=/var/run/docker.sock:/var/run/docker.sock:ro \
+            --volume=/sys:/sys:ro  \
+            --volume=/var/lib/docker/:/var/lib/docker:ro \
+            --volume=/dev/disk/:/dev/disk:ro \
+            --name $${CHILDNAME} \
+            --privileged \
+            --device=/dev/kmsg \
+            registry.cloudvalley.name:4/cadvisor:v0.47.3
+
+  # Cadvisor
   # cadvisor:
-  #   image: gcr.io/cadvisor/cadvisor:v0.47.0
-  #   command: -logtostderr -docker_only
+  #   # image: registry.cloudvalley.name:4/cadvisor:v0.47.3
+  #   # image: registry.cloudvalley.name:4/cadvisor:v0.44.0
+  #   image: starlingx/cadvisor:master-debian-stable-latest
+  #   networks: [network_cluster]
+  #   devices:
+  #     - /dev/kmsg
+  #   restart: on-failure
+  #   ports:
+  #     - "8080:8080"    
+  #   environment:
+  #     TZ: ${TZ}
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run:/var/run:rw
+  #     - /sys:/sys:ro
+  #     - /var/lib/docker/:/var/lib/docker:ro  
+  #     - /dev/disk:/dev/disk:ro
   #   deploy:
   #     mode: global
-  #     resources:
-  #       limits:
-  #         memory: 128M
-  #       reservations:
-  #         memory: 64M
-  #   volumes:
-  #     - type: bind
-  #       source: /
-  #       target: /rootfs
-  #       read_only: true
-  #     - type: bind
-  #       source: /var/run
-  #       target: /var/run
-  #       read_only: true
-  #     - type: bind
-  #       source: /sys
-  #       target: /sys
-  #       read_only: true
-  #     - type: bind
-  #       source: /var/lib/docker
-  #       target: /var/lib/docker
-  #       read_only: true
-  #     - type: bind
-  #       source: /dev/disk
-  #       target: /dev/disk
-  #       read_only: true                        
-  #   networks: [network_cluster]
+  #     placement:
+  #       constraints:
+  #         - node.platform.os == linux
 
 networks:
   network_cluster:
