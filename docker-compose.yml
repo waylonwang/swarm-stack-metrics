@@ -120,7 +120,7 @@ services:
         - homepage.ping=http://alertmanager:9093
         - homepage.weight=3
 
-  nodeexporter:
+  node-exporter:
     image: prom/node-exporter:latest
     command:
       - '--path.procfs=/host/proc'
