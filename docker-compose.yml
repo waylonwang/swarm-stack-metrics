@@ -150,7 +150,7 @@ services:
           memory: 64M
 
   cadvisor:
-    image: docker:19.03.13
+    image: docker
     volumes: 
         - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: ["/bin/sh","-c"]
