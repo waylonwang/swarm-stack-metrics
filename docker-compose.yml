@@ -179,7 +179,7 @@ services:
   #           cjie001/cadvisor:0.37.5
   # Cadvisor
   cadvisor:
-    image: starlingx/cadvisor
+    image: starlingx/cadvisor:master-debian-stable-latest
     networks: [network_cluster]
     devices:
       - /dev/kmsg:/dev/kmsg
