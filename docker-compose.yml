@@ -179,10 +179,11 @@ services:
   #           cjie001/cadvisor:0.37.5
   # Cadvisor
   cadvisor:
-    image: starlingx/cadvisor:master-debian-stable-latest
+    # image: starlingx/cadvisor:master-debian-stable-latest
+    image: registry.cloudvalley.name:4/cadvisor:v0.44.0
     networks: [network_cluster]
     devices:
-      - /dev/kmsg
+      - /dev/kmsg:/dev/kmsg
     restart: on-failure    
     ports:
       - "8888:8080"    
