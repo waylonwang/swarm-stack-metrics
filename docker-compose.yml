@@ -162,7 +162,7 @@ services:
       restart_policy:
         condition: none
     ports:
-      - 8080:8080
+      - 18080:8080
     environment:
       - TZ=Asia/Shanghai
       - PARENT={{.Task.Name}}
