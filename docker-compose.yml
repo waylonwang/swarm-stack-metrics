@@ -180,7 +180,7 @@ services:
             --name $${CHILDNAME} \
             --privileged \
             --device=/dev/kmsg \
-            registry.cloudvalley.name:4/cadvisor:v0.47.3 -docker_only
+            registry.cloudvalley.name:4/cadvisor:v0.47.3
 
   # Cadvisor
   # cadvisor:
