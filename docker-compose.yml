@@ -50,8 +50,8 @@ services:
     restart: on-failure
     environment:
       # 直接使用Portainer容器内的环境变量
-      PUID: 1000
-      PGID: 1000       
+      PUID: 0
+      PGID: 0 
       TZ: ${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
