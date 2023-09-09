@@ -17,12 +17,12 @@ services:
       - nfs_grafana_conf:/usr/share/grafana/conf
     deploy:
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_SWARM}`)"
-        - "traefik.http.routers.grafana.entrypoints=websecure"
-        - "traefik.http.routers.grafana.service=grafana"
-        - "traefik.http.routers.grafana.middlewares=noauth-chain@file"
-        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+        - traefik.enable=true
+        - traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_SWARM}`)
+        - traefik.http.routers.grafana.entrypoints=websecure
+        - traefik.http.routers.grafana.service=grafana
+        - traefik.http.routers.grafana.middlewares=noauth-chain@file
+        - traefik.http.services.grafana.loadbalancer.server.port=3000
         - homepage.group=Metrics
         - homepage.name=Grafana
         - homepage.icon=grafana.png
@@ -40,7 +40,7 @@ services:
         limits:
           memory: 128M
         reservations:
-          memory: 64M     
+          memory: 64M
           
   # Prometheus
   prometheus:
@@ -81,7 +81,7 @@ services:
         limits:
           memory: 128M
         reservations:
-          memory: 64M          
+          memory: 64M
 
   # AlertManager
   alertmanager:
@@ -120,6 +120,7 @@ services:
         - homepage.ping=http://alertmanager:9093
         - homepage.weight=3
 
+  # Node Exporter
   node-exporter:
     image: prom/node-exporter:latest
     command:
@@ -149,6 +150,7 @@ services:
         reservations:
           memory: 64M
 
+  # Cadvisor
   cadvisor:
     image: docker
     volumes: 
@@ -159,13 +161,15 @@ services:
       mode: global
       restart_policy:
         condition: none
+    ports:
+      8080:8080
     environment:
       - TZ=Asia/Shanghai
       - PARENT={{.Task.Name}}
       - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
     command: 
     - |
-      exec docker run -i --rm --network="container:$${PARENT}" \
+      exec docker run -d --network="container:$${PARENT}" \
             --env=TZ=Asia/Shanghai \
             --volume=/:/rootfs:ro \
             --volume=/var/run:/var/run:ro  \
