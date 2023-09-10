@@ -148,7 +148,7 @@ services:
   pve-exporter:
     image: prompve/prometheus-pve-exporter:latest
     command:
-      - "--no-collector.node"
+      - "--no-collector.status --no-collector.config --no-collector.version --no-collector.node --no-collector.cluster --no-collector.resources"
     networks: [network_cluster]
     restart: on-failure
     ports:
