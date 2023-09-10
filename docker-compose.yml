@@ -123,6 +123,8 @@ services:
   # PVE Exporter
   pve-exporter:
     image: prompve/prometheus-pve-exporter:latest
+    command:
+      - '/etc/pve/pve.yml'   
     networks: [network_cluster]
     restart: on-failure
     ports:
@@ -130,7 +132,7 @@ services:
     environment:   
       TZ: ${TZ}
     volumes:
-      - nfs_pve-exporter_conf:/etc
+      - nfs_pve-exporter_conf:/etc/pve
     deploy:
       placement:
         constraints:
