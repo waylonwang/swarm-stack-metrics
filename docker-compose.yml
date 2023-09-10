@@ -131,8 +131,8 @@ services:
       - 9116:9116
     environment:
       TZ: ${TZ}
-    volumes:
-      - nfs_snmp-exporter:/etc/snmp_exporter
+    # volumes:
+      # - nfs_snmp-exporter:/etc/snmp_exporter
     deploy:
       placement:
         constraints:
