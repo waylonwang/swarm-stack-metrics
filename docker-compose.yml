@@ -120,6 +120,30 @@ services:
         - homepage.ping=http://alertmanager:9093
         - homepage.weight=3
 
+  # SNMP Exporter
+  snmp-exporter:
+    image: prom/snmp-exporter:latest
+    command:
+      - "--config.file=/etc/snmp_exporter/snmp.yml"
+    networks: [network_cluster]
+    restart: on-failure
+    ports:
+      - 9116:9116
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - nfs_snmp-exporter:/etc/snmp_exporter
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == vm
+          - node.labels.metrics == true
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
   # PVE Exporter
   pve-exporter:
     image: prompve/prometheus-pve-exporter:latest
@@ -257,9 +281,9 @@ volumes:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/grafana/conf  
-  nfs_pve-exporter_conf:
+      device: :${NFS_DEVICE}/metrics/grafana/conf
+  nfs_snmp-exporter:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/pve-exporter             
+      device: :${NFS_DEVICE}/metrics/snmp-exporter      
