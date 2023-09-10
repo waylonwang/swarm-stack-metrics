@@ -122,7 +122,7 @@ services:
 
   # SNMP Exporter
   snmp-exporter:
-    image: prom/snmp-exporter:latest
+    image: prom/snmp-exporter:v0.22.0
     command:
       - "--config.file=/etc/snmp_exporter/snmp.yml"
     networks: [network_cluster]
