@@ -136,8 +136,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
+          - node.labels.type == nas
       resources:
         limits:
           memory: 128M
