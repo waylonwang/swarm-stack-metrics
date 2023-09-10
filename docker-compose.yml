@@ -157,6 +157,8 @@ services:
       PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE} 
       PVE_VERIFY_SSL: ${PVE_VERIFY_SSL} 
       TZ: ${TZ}
+    volumes:
+      - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
     deploy:
       placement:
         constraints:
@@ -286,4 +288,9 @@ volumes:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/snmp-exporter      
+      device: :${NFS_DEVICE}/metrics/snmp-exporter
+  nfs_pve-exporter_src:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/pve-exporter/prometheus-pve-exporter/src/pve_exporter
