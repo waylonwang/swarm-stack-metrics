@@ -120,6 +120,28 @@ services:
         - homepage.ping=http://alertmanager:9093
         - homepage.weight=3
 
+  # PVE Exporter
+  pve-exporter:
+    image: prompve/prometheus-pve-exporter:latest
+    networks: [network_cluster]
+    restart: on-failure
+    ports:
+      - 9221:9221
+    environment:   
+      TZ: ${TZ}
+    volumes:
+      - nfs_pve-exporter_conf:/etc
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == vm
+          - node.labels.metrics == true
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
   # Node Exporter
   node-exporter:
     image: prom/node-exporter:latest
@@ -131,14 +153,11 @@ services:
     networks: [network_cluster]
     restart: on-failure
     ports:
-      - "9100:9100"    
+      - 9100:9100
     environment:   
       TZ: ${TZ}
     volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-      - /etc/hostname:/etc/nodename
+      - /proc:/etc/pve.yml
     deploy:
       mode: global
       placement:
@@ -236,4 +255,9 @@ volumes:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/grafana/conf         
+      device: :${NFS_DEVICE}/metrics/grafana/conf  
+  nfs_pve-exporter_conf:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/pve-exporter             
