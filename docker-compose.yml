@@ -79,7 +79,7 @@ services:
           - node.labels.metrics == true
       resources:
         limits:
-          memory: 128M
+          memory: 512M
         reservations:
           memory: 64M
 
