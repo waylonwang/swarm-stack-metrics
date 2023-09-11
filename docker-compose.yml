@@ -45,7 +45,7 @@ services:
   # Prometheus
   prometheus:
     image: prom/prometheus:latest
-    command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.enable-lifecycle --web.console.templates=/usr/share/prometheus/consoles
+    command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/data --web.console.libraries=/usr/share/prometheus/console_libraries --web.enable-lifecycle --web.console.templates=/usr/share/prometheus/consoles
     networks: [network_cluster]
     restart: on-failure
     environment:
@@ -55,7 +55,8 @@ services:
       TZ: ${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - nfs_prometheus:/etc/prometheus
+      - nfs_prometheus_conf:/etc/prometheus
+      - nfs_prometheus_data:/data
     deploy:
       labels:
         - traefik.enable=true
@@ -264,11 +265,16 @@ x-common-keys-volume: &common-keys-volume
 
 volumes:
   # NFS
-  nfs_prometheus:
+  nfs_prometheus_conf:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/prometheus  
+      device: :${NFS_DEVICE}/metrics/prometheus/conf
+  nfs_prometheus_data:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/prometheus/data
   nfs_alertmanager:
     driver: local
     driver_opts:
