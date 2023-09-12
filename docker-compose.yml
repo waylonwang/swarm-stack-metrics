@@ -253,6 +253,17 @@ services:
   #       constraints:
   #         - node.platform.os == linux
 
+  scope-launcher:
+    image: weaveworks/scope-swarm-launcher
+    command: scope launch
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.platform.os == linux      
+
 networks:
   network_cluster:
     external: true
