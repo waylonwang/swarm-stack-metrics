@@ -266,10 +266,10 @@ services:
         - traefik.http.routers.scope.service=scope
         - traefik.http.routers.scope.middlewares=noauth-chain@file
         - traefik.http.services.scope.loadbalancer.server.port=4040    
-      mode: global
       placement:
         constraints:
-          - node.platform.os == linux      
+          - node.labels.type == vm
+          - node.labels.application == true 
 
 networks:
   network_cluster:
