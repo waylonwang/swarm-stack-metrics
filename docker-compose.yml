@@ -253,24 +253,6 @@ services:
   #       constraints:
   #         - node.platform.os == linux
 
-  scope-launcher:
-    image: weaveworks/scope-swarm-launcher
-    command: scope launch
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.scope.rule=Host(`scope.${DOMAIN_SWARM}`)
-        - traefik.http.routers.scope.entrypoints=websecure
-        - traefik.http.routers.scope.service=scope
-        - traefik.http.routers.scope.middlewares=noauth-chain@file
-        - traefik.http.services.scope.loadbalancer.server.port=4040    
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.application == true 
-
 networks:
   network_cluster:
     external: true
