@@ -199,36 +199,36 @@ services:
           memory: 64M
 
   # Cadvisor
-  cadvisor:
-    image: docker
-    volumes: 
-        - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: ["/bin/sh","-c"]
-    networks: [network_cluster]
-    deploy:
-      mode: global
-      restart_policy:
-        condition: none
-    ports:
-      - 18080:8080
-    environment:
-      - TZ=Asia/Shanghai
-      - PARENT={{.Task.Name}}
-      - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
-    command: 
-    - |
-      exec docker run -i --rm --network="container:$${PARENT}" \
-            --env=TZ=Asia/Shanghai \
-            --volume=/:/rootfs:ro \
-            --volume=/var/run:/var/run:ro  \
-            --volume=/var/run/docker.sock:/var/run/docker.sock:ro \
-            --volume=/sys:/sys:ro  \
-            --volume=/var/lib/docker/:/var/lib/docker:ro \
-            --volume=/dev/disk/:/dev/disk:ro \
-            --name $${CHILDNAME} \
-            --privileged \
-            --device=/dev/kmsg \
-            registry.cloudvalley.name:4/cadvisor:v0.47.3
+  # cadvisor:
+  #   image: docker
+  #   volumes: 
+  #       - /var/run/docker.sock:/var/run/docker.sock
+  #   entrypoint: ["/bin/sh","-c"]
+  #   networks: [network_cluster]
+  #   deploy:
+  #     mode: global
+  #     restart_policy:
+  #       condition: none
+  #   ports:
+  #     - 18080:8080
+  #   environment:
+  #     - TZ=Asia/Shanghai
+  #     - PARENT={{.Task.Name}}
+  #     - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
+  #   command: 
+  #   - |
+  #     exec docker run -i --rm --network="container:$${PARENT}" \
+  #           --env=TZ=Asia/Shanghai \
+  #           --volume=/:/rootfs:ro \
+  #           --volume=/var/run:/var/run:ro  \
+  #           --volume=/var/run/docker.sock:/var/run/docker.sock:ro \
+  #           --volume=/sys:/sys:ro  \
+  #           --volume=/var/lib/docker/:/var/lib/docker:ro \
+  #           --volume=/dev/disk/:/dev/disk:ro \
+  #           --name $${CHILDNAME} \
+  #           --privileged \
+  #           --device=/dev/kmsg \
+  #           registry.cloudvalley.name:4/cadvisor:v0.47.3
 
   # Cadvisor
   # cadvisor:
