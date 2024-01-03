@@ -260,8 +260,11 @@ services:
     image: niruix/sshwifty:latest
     networks: [network_cluster]
     restart: on-failure    
-    # environment:
+    environment:
+      SSHWIFTY_CONFIG: /config/sshwifty.conf.json
     #   - SSHWIFTY_SHAREDKEY=WEB_ACCESS_PASSWORD
+    volumes:
+      - nfs_sshwifty_conf:/config  
     deploy:
       placement:
         constraints:
@@ -331,3 +334,8 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/pve-exporter/prometheus-pve-exporter/src/pve_exporter
+  nfs_sshwifty_conf:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/sshwifty/config
