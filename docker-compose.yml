@@ -29,7 +29,7 @@ services:
         - homepage.href=https://grafana.${DOMAIN_SWARM}:4/
         - homepage.description=Grafana
         - homepage.siteMonitor=http://grafana:3000
-        - homepage.weight=1
+        - homepage.weight=10
       mode: replicated
       replicas: 1
       placement:
@@ -71,7 +71,7 @@ services:
         - homepage.href=https://prometheus.${DOMAIN_SWARM}:4/
         - homepage.description=Prometheus
         - homepage.siteMonitor=http://prometheus:9090
-        - homepage.weight=2
+        - homepage.weight=11
       mode: replicated
       replicas: 1
       placement:
@@ -119,7 +119,7 @@ services:
         - homepage.href=https://alertmanager.${DOMAIN_SWARM}:4/
         - homepage.description=Prometheus Alert Manager
         - homepage.siteMonitor=http://alertmanager:9093
-        - homepage.weight=3
+        - homepage.weight=12
 
   # SNMP Exporter
   snmp-exporter:
@@ -254,6 +254,37 @@ services:
   #     placement:
   #       constraints:
   #         - node.platform.os == linux
+
+  # Sshwifty
+  sshwifty:
+    image: niruix/sshwifty:latest
+    networks: [network_cluster]
+    restart: on-failure    
+    # environment:
+    #   - SSHWIFTY_SHAREDKEY=WEB_ACCESS_PASSWORD
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == vm
+          - node.labels.metrics == true
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 600M
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.ssh.rule=Host(`ssh.${DOMAIN_SWARM}`)
+        - traefik.http.routers.ssh.entrypoints=websecure
+        - traefik.http.routers.ssh.service=ssh
+        - traefik.http.routers.ssh.middlewares=noauth-chain@file
+        - traefik.http.services.ssh.loadbalancer.server.port=8182
+        - homepage.group=Metrics
+        - homepage.name=Sshwifty
+        - homepage.icon=terminal.png
+        - homepage.href=https://ssh.${DOMAIN_SWARM}:4/
+        - homepage.description=Sshwifty Web SSH & Telnet Client
+        - homepage.siteMonitor=http://ssh:8182
+        - homepage.weight=20
 
 networks:
   network_cluster:
