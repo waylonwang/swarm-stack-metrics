@@ -23,7 +23,7 @@ services:
         - traefik.http.routers.grafana.service=grafana
         - traefik.http.routers.grafana.middlewares=noauth-chain@file
         - traefik.http.services.grafana.loadbalancer.server.port=3000
-        - homepage.group=Metrics
+        - homepage.group=Metrics & Monitor
         - homepage.name=Grafana
         - homepage.icon=grafana.png
         - homepage.href=https://grafana.${DOMAIN_SWARM}:4/
@@ -65,7 +65,7 @@ services:
         - traefik.http.routers.prometheus.service=prometheus
         - traefik.http.routers.prometheus.middlewares=noauth-chain@file
         - traefik.http.services.prometheus.loadbalancer.server.port=9090
-        - homepage.group=Metrics
+        - homepage.group=Metrics & Monitor
         - homepage.name=Prometheus
         - homepage.icon=prometheus.png
         - homepage.href=https://prometheus.${DOMAIN_SWARM}:4/
@@ -113,7 +113,7 @@ services:
         - traefik.http.routers.alertmanager.service=alertmanager
         - traefik.http.routers.alertmanager.middlewares=noauth-chain@file
         - traefik.http.services.alertmanager.loadbalancer.server.port=9093
-        - homepage.group=Metrics
+        - homepage.group=Metrics & Monitor
         - homepage.name=AlertManager
         - homepage.icon=alertmanager.png
         - homepage.href=https://alertmanager.${DOMAIN_SWARM}:4/
@@ -281,7 +281,7 @@ services:
         - traefik.http.routers.ssh.service=ssh
         - traefik.http.routers.ssh.middlewares=noauth-chain@file
         - traefik.http.services.ssh.loadbalancer.server.port=8182
-        - homepage.group=Metrics
+        - homepage.group=Metrics & Monitor
         - homepage.name=Sshwifty
         - homepage.icon=terminal.png
         - homepage.href=https://ssh.${DOMAIN_SWARM}:4/
