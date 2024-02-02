@@ -30,6 +30,10 @@ services:
         - homepage.description=Grafana
         - homepage.siteMonitor=http://grafana:3000
         - homepage.weight=10
+        - homepage.widget.type=grafana
+        - homepage.widget.url=https://grafana.${DOMAIN_SWARM}:4/
+        - homepage.widget.username=${HOMEPAGE_GRAFANA_USERNAME}
+        - homepage.widget.password=${HOMEPAGE_GRAFANA_PASSWORD}        
       mode: replicated
       replicas: 1
       placement:
