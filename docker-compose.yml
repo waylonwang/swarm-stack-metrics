@@ -232,12 +232,12 @@ services:
   #           --name $${CHILDNAME} \
   #           --privileged \
   #           --device=/dev/kmsg \
-  #           registry.cloudvalley.name:4/cadvisor:v0.47.3
+  #           registry.${DOMAIN_SWARM}:4/cadvisor:v0.47.3
 
   # Cadvisor
   # cadvisor:
-  #   # image: registry.cloudvalley.name:4/cadvisor:v0.47.3
-  #   # image: registry.cloudvalley.name:4/cadvisor:v0.44.0
+  #   # image: registry.${DOMAIN_SWARM}:4/cadvisor:v0.47.3
+  #   # image: registry.${DOMAIN_SWARM}:4/cadvisor:v0.44.0
   #   image: starlingx/cadvisor:master-debian-stable-latest
   #   networks: [network_cluster]
   #   devices:
