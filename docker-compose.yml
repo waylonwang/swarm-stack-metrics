@@ -190,7 +190,7 @@ services:
       PVE_VERIFY_SSL: ${PVE_VERIFY_SSL} 
       TZ: ${TZ}
     volumes:
-      - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
+      # - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
     deploy:
       placement:
         constraints:
