@@ -151,7 +151,8 @@ services:
 
   # PVE Exporter
   pve-exporter:
-    image: prompve/prometheus-pve-exporter:latest
+    # 3.0之后改了结构，只能固定到2.3.1 
+    image: prompve/prometheus-pve-exporter:2.3.1
     networks: [network_cluster]
     restart: on-failure
     ports:
