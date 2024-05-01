@@ -317,7 +317,7 @@ services:
         - homepage.icon=terminal.png
         - homepage.href=https://ssh.${DOMAIN_SWARM}:4/
         - homepage.description=Sshwifty Web SSH & Telnet Client
-        - homepage.pinng=sshwifty
+        - homepage.ping=sshwifty
         - homepage.weight=20
 
 networks:
