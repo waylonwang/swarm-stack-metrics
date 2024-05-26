@@ -331,8 +331,3 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/pve-exporter/prometheus-pve-exporter/src/pve_exporter
-  nfs_sshwifty_conf:
-    driver: local
-    driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/sshwifty/config
