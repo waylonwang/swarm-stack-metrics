@@ -21,7 +21,7 @@ services:
         - traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_SWARM}`,`grafana.${DOMAIN_EMERGENCY}`)
         - traefik.http.routers.grafana.entrypoints=websecure
         - traefik.http.routers.grafana.service=grafana
-        - traefik.http.routers.grafana.middlewares=authentik@file,normal-chain@file
+        - traefik.http.routers.grafana.middlewares=auth,normal-chain@file
         - traefik.http.services.grafana.loadbalancer.server.port=3000
         - homepage.group=Metrics & Monitor
         - homepage.name=Grafana
@@ -67,7 +67,7 @@ services:
         - traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN_SWARM}`,`prometheus.${DOMAIN_EMERGENCY}`)
         - traefik.http.routers.prometheus.entrypoints=websecure
         - traefik.http.routers.prometheus.service=prometheus
-        - traefik.http.routers.prometheus.middlewares=normal-chain@file
+        - traefik.http.routers.prometheus.middlewares=auth,normal-chain@file
         - traefik.http.services.prometheus.loadbalancer.server.port=9090
         - homepage.group=Metrics & Monitor
         - homepage.name=Prometheus
@@ -115,7 +115,7 @@ services:
         - traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN_SWARM}`,`alertmanager.${DOMAIN_EMERGENCY}`)
         - traefik.http.routers.alertmanager.entrypoints=websecure
         - traefik.http.routers.alertmanager.service=alertmanager
-        - traefik.http.routers.alertmanager.middlewares=normal-chain@file
+        - traefik.http.routers.alertmanager.middlewares=auth,normal-chain@file
         - traefik.http.services.alertmanager.loadbalancer.server.port=9093
         - homepage.group=Metrics & Monitor
         - homepage.name=AlertManager
