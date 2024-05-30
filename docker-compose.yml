@@ -208,6 +208,7 @@ services:
       ES_JAVA_OPTS: "-Xms2g -Xmx2g"
     volumes:
       - nfs_elasticsearch_data:/usr/share/elasticsearch/data
+      - nfs_elasticsearch_conf:/usr/share/elasticsearch/config
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -415,6 +416,11 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/elasticsearch/data
+  nfs_elasticsearch_conf:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/elasticsearch/config      
   nfs_logstash_conf:
     driver: local
     driver_opts:
