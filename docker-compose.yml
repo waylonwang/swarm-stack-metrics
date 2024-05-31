@@ -259,7 +259,7 @@ services:
         - traefik.http.routers.kibana.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
         - traefik.http.routers.kibana.entrypoints=websecure
         - traefik.http.routers.kibana.service=kibana
-        - traefik.http.routers.kibana.middlewares=auth,normal-chain@file
+        - traefik.http.routers.kibana.middlewares=normal-chain@file
         - traefik.http.services.kibana.loadbalancer.server.port=5601
         - homepage.group=Metrics & Monitor
         - homepage.name=ELK
