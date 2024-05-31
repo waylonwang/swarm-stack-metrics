@@ -417,19 +417,19 @@ volumes:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elasticsearch/data
+      device: :${NFS_DEVICE}/metrics/elk/elasticsearch/data
   nfs_elasticsearch_conf:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elasticsearch/config      
+      device: :${NFS_DEVICE}/metrics/elk/elasticsearch/config      
   nfs_logstash_conf:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/logstash/conf           
+      device: :${NFS_DEVICE}/metrics/elk/logstash/conf           
   nfs_kibana_conf:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/kibana/config         
+      device: :${NFS_DEVICE}/metrics/elk/kibana/config         
