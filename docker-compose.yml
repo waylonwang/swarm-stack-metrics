@@ -253,6 +253,8 @@ services:
     image: kibana:8.13.4
     environment:
       ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    volumes:
+      - nfs_kibana_conf:/usr/share/kibana/config    
     deploy:
       labels:    
         - traefik.enable=true
@@ -426,3 +428,8 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/logstash/conf           
+  nfs_kibana_conf:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/kibana/config         
