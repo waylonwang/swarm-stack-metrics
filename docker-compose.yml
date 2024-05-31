@@ -205,9 +205,13 @@ services:
   elasticsearch:
     image: elasticsearch:8.13.4
     environment:
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      cluster.name: "elasticsearch" #设置集群名称为elasticsearch
+      discovery.type: "single-node" #以单一节点模式启动
+      ES_JAVA_OPTS: "Xms512m -Xmx512m" #设置使用jvm内存大小      
+      # ES_JAVA_OPTS: "-Xms2g -Xmx2g" 
     volumes:
       - nfs_elasticsearch_data:/usr/share/elasticsearch/data
+      - nfs_elasticsearch_plugins:/usr/share/elasticsearch/plugins
       - nfs_elasticsearch_conf:/usr/share/elasticsearch/config
     ports:
       - "9200:9200"
@@ -229,11 +233,12 @@ services:
 
   logstash:
     image: logstash:8.13.4
-    command: ["logstash","-f","/etc/conf/logstash.conf"]
+    # command: ["logstash","-f","/etc/conf/logstash.conf"]
     volumes:
-      - nfs_logstash_conf:/etc/conf
+      - nfs_logstash_conf:/usr/share/logstash/config
     ports:
-        - "12201:12201/udp"
+        # - "12201:12201/udp"
+        - 4560:4560
     deploy:
       placement:
         constraints:
@@ -252,7 +257,8 @@ services:
   kibana:
     image: kibana:8.13.4
     environment:
-      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+      elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
+      # ELASTICSEARCH_URL: "http://elasticsearch:9200"
     volumes:
       - nfs_kibana_conf:/usr/share/kibana/config    
     deploy:
@@ -418,6 +424,11 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/elk/elasticsearch/data
+  nfs_elasticsearch_plugins:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/elk/elasticsearch/plugins  
   nfs_elasticsearch_conf:
     driver: local
     driver_opts:
