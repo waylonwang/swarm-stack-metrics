@@ -264,7 +264,28 @@ services:
         constraints:
           - node.platform.os == linux          
 
-
+  swarm-log:
+    image: bekt/logspout-logstash:latest
+    volumes:
+      # Logspout reads this in and attaches it to the log
+      - /etc/hostname:/etc/host_hostname:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # IP and port for logstash host
+      - ROUTE_URIS=logstash://elk:5001
+      # Include all docker labels
+      - DOCKER_LABELS=true
+      # Add environment field to all logs sent to logstash
+      # - LOGSTASH_FIELDS=environment=${NODE_ENV}
+    deploy:
+      mode: global
+      # resources:
+      #   limits:
+      #     cpus: '0.20'
+      #     memory: 256M
+      #   reservations:
+      #     cpus: '0.10'
+      #     memory: 128M
 
   # elasticsearch:
   #   image: elasticsearch:8.13.4
