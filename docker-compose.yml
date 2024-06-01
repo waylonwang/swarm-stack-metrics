@@ -243,7 +243,7 @@ services:
 
   logspout:
     image: gliderlabs/logspout:v3.2.14
-    command: syslog+tcp://elk:5044
+    command: syslog+tcp://elk:5000
     networks: [network_cluster]
     # environment:
     #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
