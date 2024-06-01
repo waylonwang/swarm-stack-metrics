@@ -266,6 +266,7 @@ services:
 
   swarm-log:
     image: bekt/logspout-logstash:latest
+    etworks: [network_cluster]
     volumes:
       # Logspout reads this in and attaches it to the log
       - /etc/hostname:/etc/host_hostname:ro
