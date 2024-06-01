@@ -228,7 +228,6 @@ services:
         - homepage.description=ELK
         - homepage.siteMonitor=http://elk:5601
         - homepage.weight=20             
-    deploy:
       replicas: 1     
       placement:
         constraints:
