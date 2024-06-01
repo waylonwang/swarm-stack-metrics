@@ -212,7 +212,14 @@ services:
       - "9200:9200"
       - "5044:5044"  
     environment:
-      TZ: ${TZ}    
+      TZ: ${TZ}  
+    volumes:
+      - nfs_elk_kibana_conf:/opt/kibana/config             
+      - nfs_elk_elasticsearch_conf:/opt/elasticsearch/config   
+      - nfs_elk_logstash_conf:/opt/logstash/config    
+      - nfs_elk_logstash_pipelines:/etc/logstash/conf.d   
+      - nfs_elk_elasticsearch_plugins:/opt/elasticsearch/plugins
+      - nfs_elk_elasticsearch_data:/var/lib/elasticsearch
     deploy:
       labels:    
         - traefik.enable=true
@@ -453,27 +460,32 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/pve-exporter/prometheus-pve-exporter/src/pve_exporter
-  nfs_elasticsearch_data:
+  nfs_elk_elasticsearch_data:
     driver: local
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/elk/elasticsearch/data
-  nfs_elasticsearch_plugins:
+  nfs_elk_elasticsearch_plugins:
     driver: local
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/elk/elasticsearch/plugins  
-  nfs_elasticsearch_conf:
+  nfs_elk_elasticsearch_conf:
     driver: local
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/elk/elasticsearch/config      
-  nfs_logstash_conf:
+  nfs_elk_logstash_conf:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elk/logstash/conf           
-  nfs_kibana_conf:
+      device: :${NFS_DEVICE}/metrics/elk/logstash/conf  
+  nfs_elk_logstash_pipelines:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/elk/logstash/pipelines           
+  nfs_elk_kibana_conf:
     driver: local
     driver_opts:
       <<: *common-keys-volume
