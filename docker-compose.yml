@@ -212,7 +212,22 @@ services:
       - "9200:9200"
       - "5044:5044"  
     environment:
-      TZ: ${TZ}       
+      TZ: ${TZ}    
+    deploy:
+      labels:    
+        - traefik.enable=true
+        - traefik.http.routers.elk.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
+        - traefik.http.routers.elk.entrypoints=websecure
+        - traefik.http.routers.elk.service=elk
+        - traefik.http.routers.elk.middlewares=auth,normal-chain@file
+        - traefik.http.services.elk.loadbalancer.server.port=5601
+        - homepage.group=Metrics & Monitor
+        - homepage.name=ELK
+        - homepage.icon=kibana.png
+        - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
+        - homepage.description=ELK
+        - homepage.siteMonitor=http://elk:5601
+        - homepage.weight=20             
     deploy:
       replicas: 1     
       placement:
