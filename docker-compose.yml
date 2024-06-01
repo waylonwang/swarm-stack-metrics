@@ -207,10 +207,10 @@ services:
     image: sebp/elk:8.13.4
     networks: [network_cluster]
     restart: on-failure    
-    # ports:
-    #   - "5601:5601"
-    #   - "9200:9200"
-    #   - "5044:5044"  
+    ports:
+      - "5601:5601"
+      - "9200:9200"
+      - "5044:5044"  
     environment:
       TZ: ${TZ}  
     volumes:
