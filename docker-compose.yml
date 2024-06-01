@@ -240,6 +240,32 @@ services:
         constraints:
           - node.labels.type == vm
           - node.labels.metrics == true    
+
+  logspout:
+    image: gliderlabs/logspout:v3.2.14
+    command: syslog+tcp://elk:5044
+    networks: [network_cluster]
+    # environment:
+    #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
+    #   tag: "<custom tag>"
+    volumes:
+      - /etc/hostname:/etc/host_hostname:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 128M      
+      placement:
+        constraints:
+          - node.platform.os == linux          
+
+
+
   # elasticsearch:
   #   image: elasticsearch:8.13.4
   #   environment:
