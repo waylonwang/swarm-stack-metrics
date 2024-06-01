@@ -203,98 +203,112 @@ services:
           memory: 64M
 
   # ELK
-  # elk:
-  #   image: sebp/elk:8.13.4
-  elasticsearch:
-    image: elasticsearch:8.13.4
-    environment:
-      cluster.name: "elasticsearch" #设置集群名称为elasticsearch
-      discovery.type: "single-node" #以单一节点模式启动
-      ES_JAVA_OPTS: "-Xms512m -Xmx512m" #设置使用jvm内存大小      
-      # ES_JAVA_OPTS: "-Xms2g -Xmx2g" 
-    volumes:
-      - nfs_elasticsearch_data:/usr/share/elasticsearch/data
-      - nfs_elasticsearch_plugins:/usr/share/elasticsearch/plugins
-      - nfs_elasticsearch_conf:/usr/share/elasticsearch/config
+  elk:
+    image: sebp/elk:8.13.4
+    networks: [network_cluster]
+    restart: on-failure    
     ports:
+      - "5601:5601"
       - "9200:9200"
-      - "9300:9300"
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true    
-      replicas: 1
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-
-  logstash:
-    image: logstash:8.13.4
-    # command: ["logstash","-f","/etc/conf/logstash.conf"]
-    volumes:
-      - nfs_logstash_conf:/usr/share/logstash/config
-    ports:
-        # - "12201:12201/udp"
-        - 4560:4560
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true    
-      replicas: 1
-      resources:
-        limits:
-          cpus: '1'
-          memory: 1G
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-
-  kibana:
-    image: kibana:8.13.4
+      - "5044:5044"  
     environment:
-      elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
-      # ELASTICSEARCH_URL: "http://elasticsearch:9200"
-    ports:
-        # - "12201:12201/udp"
-        - 5601:5601      
-    volumes:
-      - nfs_kibana_conf:/usr/share/kibana/config    
+      TZ: ${TZ}       
     deploy:
-      labels:    
-        - traefik.enable=true
-        - traefik.http.routers.kibana.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
-        - traefik.http.routers.kibana.entrypoints=websecure
-        - traefik.http.routers.kibana.service=kibana
-        - traefik.http.routers.kibana.middlewares=normal-chain@file
-        - traefik.http.services.kibana.loadbalancer.server.port=5601
-        - homepage.group=Metrics & Monitor
-        - homepage.name=ELK
-        - homepage.icon=kibana.png
-        - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-        - homepage.description=ELK
-        - homepage.siteMonitor=http://kibana:5601
-        - homepage.weight=20    
+      replicas: 1     
       placement:
         constraints:
           - node.labels.type == vm
-          - node.labels.metrics == true        
-      replicas: 1
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
+          - node.labels.metrics == true    
+  # elasticsearch:
+  #   image: elasticsearch:8.13.4
+  #   environment:
+  #     cluster.name: "elasticsearch" #设置集群名称为elasticsearch
+  #     discovery.type: "single-node" #以单一节点模式启动
+  #     ES_JAVA_OPTS: "-Xms512m -Xmx512m" #设置使用jvm内存大小      
+  #     # ES_JAVA_OPTS: "-Xms2g -Xmx2g" 
+  #   volumes:
+  #     - nfs_elasticsearch_data:/usr/share/elasticsearch/data
+  #     - nfs_elasticsearch_plugins:/usr/share/elasticsearch/plugins
+  #     - nfs_elasticsearch_conf:/usr/share/elasticsearch/config
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == vm
+  #         - node.labels.metrics == true    
+  #     replicas: 1
+  #     resources:
+  #       limits:
+  #         cpus: '2'
+  #         memory: 2G
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 5s
+  #       max_attempts: 3
+
+  # logstash:
+  #   image: logstash:8.13.4
+  #   # command: ["logstash","-f","/etc/conf/logstash.conf"]
+  #   volumes:
+  #     - nfs_logstash_conf:/usr/share/logstash/config
+  #   ports:
+  #       # - "12201:12201/udp"
+  #       - 4560:4560
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == vm
+  #         - node.labels.metrics == true    
+  #     replicas: 1
+  #     resources:
+  #       limits:
+  #         cpus: '1'
+  #         memory: 1G
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 5s
+  #       max_attempts: 3
+
+  # kibana:
+  #   image: kibana:8.13.4
+  #   environment:
+  #     elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
+  #     # ELASTICSEARCH_URL: "http://elasticsearch:9200"
+  #   ports:
+  #       # - "12201:12201/udp"
+  #       - 5601:5601      
+  #   volumes:
+  #     - nfs_kibana_conf:/usr/share/kibana/config    
+  #   deploy:
+  #     labels:    
+  #       - traefik.enable=true
+  #       - traefik.http.routers.kibana.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
+  #       - traefik.http.routers.kibana.entrypoints=websecure
+  #       - traefik.http.routers.kibana.service=kibana
+  #       - traefik.http.routers.kibana.middlewares=normal-chain@file
+  #       - traefik.http.services.kibana.loadbalancer.server.port=5601
+  #       - homepage.group=Metrics & Monitor
+  #       - homepage.name=ELK
+  #       - homepage.icon=kibana.png
+  #       - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
+  #       - homepage.description=ELK
+  #       - homepage.siteMonitor=http://kibana:5601
+  #       - homepage.weight=20    
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == vm
+  #         - node.labels.metrics == true        
+  #     replicas: 1
+  #     resources:
+  #       limits:
+  #         cpus: '2'
+  #         memory: 1G
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 5s
+  #       max_attempts: 3
 
   # Node Exporter
   # node-exporter:
