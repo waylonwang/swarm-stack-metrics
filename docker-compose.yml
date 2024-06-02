@@ -210,6 +210,7 @@ services:
     ports:
       - "5601:5601"
       - "9200:9200"
+      - "5001:5001"
       # - "5044:5044"  
     environment:
       TZ: ${TZ}  
@@ -273,7 +274,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       # IP and port for logstash host
-      - ROUTE_URIS=logstash://elk:5001
+      - ROUTE_URIS=logstash://192.168.11.117:5001
       # Include all docker labels
       - DOCKER_LABELS=true
       # Add environment field to all logs sent to logstash
