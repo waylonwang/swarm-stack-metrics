@@ -266,6 +266,31 @@ services:
           - node.platform.os == linux    
           - node.labels.type == vm      
 
+  logspout-router:
+    image: gliderlabs/logspout:v3.2.14
+    command: syslog+tcp://192.168.11.117
+    networks: [network_cluster]
+    # environment:
+    #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
+    #   tag: "<custom tag>"
+    volumes:
+      - /etc/hostname:/etc/host_hostname:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: replicated
+      replicas: 1
+      # resources:
+      #   limits:
+      #     cpus: '0.20'
+      #     memory: 256M
+      #   reservations:
+      #     cpus: '0.10'
+      #     memory: 128M      
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.type == router
+
   # swarm-log:
   #   image: bekt/logspout-logstash:latest
   #   networks: [network_cluster]
