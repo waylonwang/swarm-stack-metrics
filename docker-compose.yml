@@ -242,9 +242,9 @@ services:
           - node.labels.type == vm
           - node.labels.metrics == true    
 
-  logspout:
+  logspout-vm:
     image: gliderlabs/logspout:v3.2.14
-    command: syslog+tcp://192.168.11.117:5000
+    command: syslog+tcp://elk:5000
     networks: [network_cluster]
     # environment:
     #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
@@ -263,7 +263,8 @@ services:
       #     memory: 128M      
       placement:
         constraints:
-          - node.platform.os == linux          
+          - node.platform.os == linux    
+          - node.labels.type == vm      
 
   # swarm-log:
   #   image: bekt/logspout-logstash:latest
