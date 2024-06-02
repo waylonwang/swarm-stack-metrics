@@ -291,6 +291,26 @@ services:
         constraints:
           - node.platform.os == linux            
 
+  fluentd:
+    image: ruanbekker/fluentd-elasticsearch
+    networks: [network_cluster]    
+    user: root
+    environment:
+      FLUENTD_CONF: 'fluent.conf'
+      FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
+    ports:
+      - 24224:24224
+      - 24224:24224/udp
+    volumes:
+      - nfs_fluentd_conf:/fluentd/etc/fluent.conf
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.platform.os == linux          
+
   # elasticsearch:
   #   image: elasticsearch:8.13.4
   #   environment:
@@ -541,3 +561,8 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/elk/kibana/config         
+  nfs_fluentd_conf:
+    driver: local
+    driver_opts:
+      <<: *common-keys-volume
+      device: :${NFS_DEVICE}/metrics/fluentd/config/fluentd.conf          
