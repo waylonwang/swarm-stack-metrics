@@ -244,8 +244,9 @@ services:
       replicas: 1     
       placement:
         constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true    
+          - node.labels.type == nas
+          - node.labels.media == true
+          - node.labels.nas == primary 
 
   logspout-vm:
     image: gliderlabs/logspout:v3.2.14
