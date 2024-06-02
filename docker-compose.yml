@@ -493,6 +493,10 @@ networks:
   network_cluster:
     external: true
 
+configs:
+  fluentd_conf.v1:
+    external: true
+
 x-common-keys-volume: &common-keys-volume
   type: nfs
   o: addr=${NFS_SERVER},rw,nfsvers=4
