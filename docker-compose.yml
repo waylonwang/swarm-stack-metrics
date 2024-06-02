@@ -244,7 +244,7 @@ services:
 
   logspout-vm:
     image: gliderlabs/logspout:v3.2.14
-    command: syslog+tcp://elk
+    command: syslog+tcp://elk:5000
     networks: [network_cluster]
     # environment:
     #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
@@ -268,7 +268,7 @@ services:
 
   logspout-router:
     image: gliderlabs/logspout:v3.2.14
-    command: syslog+tcp://192.168.11.117
+    command: syslog+tcp://192.168.11.117:5000
     networks: [network_cluster]
     # environment:
     #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
