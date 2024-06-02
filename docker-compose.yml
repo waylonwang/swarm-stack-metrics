@@ -318,28 +318,28 @@ services:
   #       constraints:
   #         - node.platform.os == linux            
 
-  fluentd:
-    image: ruanbekker/fluentd-elasticsearch
-    networks: [network_cluster]    
-    user: root
-    environment:
-      FLUENTD_CONF: 'fluent.conf'
-      FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
-    ports:
-      - 24224:24224
-      - 24224:24224/udp
-    # volumes:
-    #   - nfs_fluentd_conf:/fluentd/etc/fluent.conf
-    configs:
-      - source: fluentd_conf.v2
-        target: /fluentd/etc/fluent.conf      
-    deploy:
-      mode: global
-      restart_policy:
-        condition: on-failure
-      placement:
-        constraints:
-          - node.platform.os == linux          
+  # fluentd:
+  #   image: ruanbekker/fluentd-elasticsearch
+  #   networks: [network_cluster]    
+  #   user: root
+  #   environment:
+  #     FLUENTD_CONF: 'fluent.conf'
+  #     FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
+  #   ports:
+  #     - 24224:24224
+  #     - 24224:24224/udp
+  #   # volumes:
+  #   #   - nfs_fluentd_conf:/fluentd/etc/fluent.conf
+  #   configs:
+  #     - source: fluentd_conf.v2
+  #       target: /fluentd/etc/fluent.conf      
+  #   deploy:
+  #     mode: global
+  #     restart_policy:
+  #       condition: on-failure
+  #     placement:
+  #       constraints:
+  #         - node.platform.os == linux          
 
   # elasticsearch:
   #   image: elasticsearch:8.13.4
