@@ -331,7 +331,7 @@ services:
     # volumes:
     #   - nfs_fluentd_conf:/fluentd/etc/fluent.conf
     configs:
-      - source: fluentd_conf.v2
+      - source: fluentd_conf.v3
         target: /fluentd/etc/fluent.conf      
     deploy:
       mode: global
@@ -525,6 +525,8 @@ configs:
     external: true
   fluentd_conf.v2:
     external: true
+  fluentd_conf.v3:
+    external: true    
 
 x-common-keys-volume: &common-keys-volume
   type: nfs
