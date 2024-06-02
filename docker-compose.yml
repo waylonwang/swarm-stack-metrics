@@ -304,7 +304,7 @@ services:
     # volumes:
     #   - nfs_fluentd_conf:/fluentd/etc/fluent.conf
     configs:
-      - source: fluent-elasticsearch-conf.v1
+      - source: fluentd_conf.v1
         target: /fluentd/etc/fluent.conf      
     deploy:
       mode: global
