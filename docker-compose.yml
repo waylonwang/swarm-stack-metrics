@@ -331,7 +331,7 @@ services:
     # volumes:
     #   - nfs_fluentd_conf:/fluentd/etc/fluent.conf
     configs:
-      - source: fluentd_conf.v3
+      - source: fluentd_conf.v2
         target: /fluentd/etc/fluent.conf      
     deploy:
       mode: global
