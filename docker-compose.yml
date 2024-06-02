@@ -45,6 +45,11 @@ services:
           memory: 128M
         reservations:
           memory: 64M
+    logging:
+      driver: fluentd
+      options:
+        tag: docker.metrics.grafana
+        fluentd-async-connect: "true"            
           
   # Prometheus
   prometheus:
