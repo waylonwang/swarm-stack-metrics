@@ -565,4 +565,4 @@ volumes:
     driver: local
     driver_opts:
       <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/fluentd/config/fluentd.conf          
+      device: :${NFS_DEVICE}/metrics/fluentd/conf/fluentd.conf          
