@@ -302,7 +302,12 @@ services:
       - 24224:24224
       - 24224:24224/udp
     volumes:
-      - nfs_fluentd_conf:/fluentd/etc/fluent.conf
+      # - nfs_fluentd_conf:/fluentd/etc/fluent.conf
+      - type: volume
+        source: nfs_fluentd_conf
+        target: /fluentd/etc/fluentd.conf
+        volume:
+          nocopy: true
     deploy:
       mode: global
       restart_policy:
