@@ -301,13 +301,11 @@ services:
     ports:
       - 24224:24224
       - 24224:24224/udp
-    volumes:
-      # - nfs_fluentd_conf:/fluentd/etc/fluent.conf
-      - type: volume
-        source: nfs_fluentd_conf
-        target: /fluentd/etc/fluentd.conf
-        volume:
-          nocopy: true
+    # volumes:
+    #   - nfs_fluentd_conf:/fluentd/etc/fluent.conf
+    configs:
+      - source: fluent-elasticsearch-conf.v1
+        target: /fluentd/etc/fluent.conf      
     deploy:
       mode: global
       restart_policy:
@@ -566,8 +564,8 @@ volumes:
     driver_opts:
       <<: *common-keys-volume
       device: :${NFS_DEVICE}/metrics/elk/kibana/config         
-  nfs_fluentd_conf:
-    driver: local
-    driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/fluentd/conf/fluentd.conf          
+  # nfs_fluentd_conf:
+  #   driver: local
+  #   driver_opts:
+  #     <<: *common-keys-volume
+  #     device: :${NFS_DEVICE}/metrics/fluentd/conf/fluentd.conf          
