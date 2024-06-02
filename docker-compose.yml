@@ -242,43 +242,16 @@ services:
           - node.labels.type == vm
           - node.labels.metrics == true    
 
-  # logspout:
-  #   image: gliderlabs/logspout:v3.2.14
-  #   command: syslog+tcp://elk:5000
-  #   networks: [network_cluster]
-  #   # environment:
-  #   #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
-  #   #   tag: "<custom tag>"
-  #   volumes:
-  #     - /etc/hostname:/etc/host_hostname:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   deploy:
-  #     mode: global
-  #     # resources:
-  #     #   limits:
-  #     #     cpus: '0.20'
-  #     #     memory: 256M
-  #     #   reservations:
-  #     #     cpus: '0.10'
-  #     #     memory: 128M      
-  #     placement:
-  #       constraints:
-  #         - node.platform.os == linux          
-
-  swarm-log:
-    image: bekt/logspout-logstash:latest
+  logspout:
+    image: gliderlabs/logspout:v3.2.14
+    command: syslog+tcp://192.168.11.117:5000
     networks: [network_cluster]
+    # environment:
+    #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
+    #   tag: "<custom tag>"
     volumes:
-      # Logspout reads this in and attaches it to the log
       - /etc/hostname:/etc/host_hostname:ro
       - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      # IP and port for logstash host
-      - ROUTE_URIS=logstash://192.168.11.117:5001
-      # Include all docker labels
-      - DOCKER_LABELS=true
-      # Add environment field to all logs sent to logstash
-      # - LOGSTASH_FIELDS=environment=${NODE_ENV}
     deploy:
       mode: global
       # resources:
@@ -287,10 +260,37 @@ services:
       #     memory: 256M
       #   reservations:
       #     cpus: '0.10'
-      #     memory: 128M
+      #     memory: 128M      
       placement:
         constraints:
-          - node.platform.os == linux            
+          - node.platform.os == linux          
+
+  # swarm-log:
+  #   image: bekt/logspout-logstash:latest
+  #   networks: [network_cluster]
+  #   volumes:
+  #     # Logspout reads this in and attaches it to the log
+  #     - /etc/hostname:/etc/host_hostname:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   environment:
+  #     # IP and port for logstash host
+  #     - ROUTE_URIS=logstash://192.168.11.117:5001
+  #     # Include all docker labels
+  #     - DOCKER_LABELS=true
+  #     # Add environment field to all logs sent to logstash
+  #     # - LOGSTASH_FIELDS=environment=${NODE_ENV}
+  #   deploy:
+  #     mode: global
+  #     # resources:
+  #     #   limits:
+  #     #     cpus: '0.20'
+  #     #     memory: 256M
+  #     #   reservations:
+  #     #     cpus: '0.10'
+  #     #     memory: 128M
+  #     placement:
+  #       constraints:
+  #         - node.platform.os == linux            
 
   fluentd:
     image: ruanbekker/fluentd-elasticsearch
