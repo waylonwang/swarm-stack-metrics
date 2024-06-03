@@ -351,7 +351,8 @@ services:
   elasticsearch:
     image: elasticsearch:7.17.21
     environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       # - "cluster.name=es-cluster"
       - "discovery.type=single-node"
       # - "discovery.zen.minimum_master_nodes=1"
