@@ -448,6 +448,8 @@ services:
         - traefik.http.routers.kibana.service=kibana
         - traefik.http.routers.kibana.middlewares=normal-chain@file
         - traefik.http.services.kibana.loadbalancer.server.port=5601
+        - traefik.http.services.kibana.loadbalancer.server.responseTimeout=180s # 调整为你需要的时间
+        - traefik.http.services.kibana.loadbalancer.server.idleTimeout=5m     # 调整为你需要的时间
         - homepage.group=Metrics & Monitor
         - homepage.name=ELK
         - homepage.icon=kibana.png
