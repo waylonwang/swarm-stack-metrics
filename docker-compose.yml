@@ -261,6 +261,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       mode: global
+      replicas: 0
       # resources:
       #   limits:
       #     cpus: '0.20'
@@ -285,7 +286,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 0
       # resources:
       #   limits:
       #     cpus: '0.20'
@@ -424,8 +425,10 @@ services:
     networks: [network_cluster]
     environment:
       - SERVER_NAME=kibana.${DOMAIN:-localhost}
-      - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
-      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
+      - ELASTICSEARCH_URL=http://192.168.11.99:9200"
+      - ELASTICSEARCH_HOSTS=http://192.168.11.99:9200"
+      # - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
+      # - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
       # elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
       # ELASTICSEARCH_URL: "http://elasticsearch:9200"
     ports:
