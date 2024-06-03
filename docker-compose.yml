@@ -350,6 +350,7 @@ services:
 
   elasticsearch:
     image: elasticsearch:7.17.21
+    networks: [network_cluster]
     environment:
       # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
@@ -420,6 +421,7 @@ services:
 
   kibana:
     image: kibana:7.17.21
+    networks: [network_cluster]
     environment:
       - SERVER_NAME=kibana.${DOMAIN:-localhost}
       - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
