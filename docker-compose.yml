@@ -242,7 +242,7 @@ services:
         - homepage.description=ELK
         - homepage.siteMonitor=http://elk:5601
         - homepage.weight=20             
-      replicas: 1     
+      replicas: 0     
       placement:
         constraints:
           - node.labels.type == nas
@@ -348,34 +348,49 @@ services:
   #       constraints:
   #         - node.platform.os == linux          
 
-  # elasticsearch:
-  #   image: elasticsearch:8.13.4
-  #   environment:
-  #     cluster.name: "elasticsearch" #设置集群名称为elasticsearch
-  #     discovery.type: "single-node" #以单一节点模式启动
-  #     ES_JAVA_OPTS: "-Xms512m -Xmx512m" #设置使用jvm内存大小      
-  #     # ES_JAVA_OPTS: "-Xms2g -Xmx2g" 
-  #   volumes:
-  #     - nfs_elasticsearch_data:/usr/share/elasticsearch/data
-  #     - nfs_elasticsearch_plugins:/usr/share/elasticsearch/plugins
-  #     - nfs_elasticsearch_conf:/usr/share/elasticsearch/config
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == vm
-  #         - node.labels.metrics == true    
-  #     replicas: 1
-  #     resources:
-  #       limits:
-  #         cpus: '2'
-  #         memory: 2G
-  #     restart_policy:
-  #       condition: on-failure
-  #       delay: 5s
-  #       max_attempts: 3
+  elasticsearch:
+    image: elasticsearch:7.17.21
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "cluster.name=es-cluster"
+      - "discovery.zen.minimum_master_nodes=1"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      - "node.master=true"
+      - "node.data=true"
+      - "node.ingest=true"
+      - "node.name=es-node.{{.Task.Slot}}.{{.Node.Hostname}}"
+      - "bootstrap.system_call_filter=false"
+      - "LOGSPOUT=ignore"    
+      # cluster.name: "elasticsearch" #设置集群名称为elasticsearch
+      # discovery.type: "single-node" #以单一节点模式启动
+      # ES_JAVA_OPTS: "-Xms512m -Xmx512m" #设置使用jvm内存大小      
+      # ES_JAVA_OPTS: "-Xms2g -Xmx2g" 
+    volumes:
+      - nfs_elasticsearch_data:/usr/share/elasticsearch/data
+      - nfs_elasticsearch_plugins:/usr/share/elasticsearch/plugins
+      - nfs_elasticsearch_conf:/usr/share/elasticsearch/config
+    ports:
+      # - "9200:9200"
+      # - "9300:9300"
+      - target: 9200
+        published: 9200
+        protocol: tcp
+        mode: host      
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == nas
+          - node.labels.media == true
+          - node.labels.nas == primary  
+      replicas: 1
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
 
   # logstash:
   #   image: logstash:8.13.4
@@ -400,44 +415,52 @@ services:
   #       delay: 5s
   #       max_attempts: 3
 
-  # kibana:
-  #   image: kibana:8.13.4
-  #   environment:
-  #     elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
-  #     # ELASTICSEARCH_URL: "http://elasticsearch:9200"
-  #   ports:
-  #       # - "12201:12201/udp"
-  #       - 5601:5601      
-  #   volumes:
-  #     - nfs_kibana_conf:/usr/share/kibana/config    
-  #   deploy:
-  #     labels:    
-  #       - traefik.enable=true
-  #       - traefik.http.routers.kibana.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
-  #       - traefik.http.routers.kibana.entrypoints=websecure
-  #       - traefik.http.routers.kibana.service=kibana
-  #       - traefik.http.routers.kibana.middlewares=normal-chain@file
-  #       - traefik.http.services.kibana.loadbalancer.server.port=5601
-  #       - homepage.group=Metrics & Monitor
-  #       - homepage.name=ELK
-  #       - homepage.icon=kibana.png
-  #       - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-  #       - homepage.description=ELK
-  #       - homepage.siteMonitor=http://kibana:5601
-  #       - homepage.weight=20    
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == vm
-  #         - node.labels.metrics == true        
-  #     replicas: 1
-  #     resources:
-  #       limits:
-  #         cpus: '2'
-  #         memory: 1G
-  #     restart_policy:
-  #       condition: on-failure
-  #       delay: 5s
-  #       max_attempts: 3
+  kibana:
+    image: kibana:7.17.21
+    environment:
+      - SERVER_NAME=kibana.${DOMAIN:-localhost}
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
+      # elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
+      # ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    ports:
+        # - "12201:12201/udp"
+        # - 5601:5601      
+      - target: 5601
+        published: 5601
+        protocol: tcp
+        mode: host        
+    volumes:
+      - nfs_kibana_conf:/usr/share/kibana/config    
+    deploy:
+      labels:    
+        - traefik.enable=true
+        - traefik.http.routers.kibana.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
+        - traefik.http.routers.kibana.entrypoints=websecure
+        - traefik.http.routers.kibana.service=kibana
+        - traefik.http.routers.kibana.middlewares=normal-chain@file
+        - traefik.http.services.kibana.loadbalancer.server.port=5601
+        - homepage.group=Metrics & Monitor
+        - homepage.name=ELK
+        - homepage.icon=kibana.png
+        - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
+        - homepage.description=ELK
+        - homepage.siteMonitor=http://kibana:5601
+        - homepage.weight=20    
+      placement:
+        constraints:
+          - node.labels.type == nas
+          - node.labels.media == true
+          - node.labels.nas == primary       
+      replicas: 1
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
 
   # Node Exporter
   # node-exporter:
