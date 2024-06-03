@@ -359,7 +359,8 @@ services:
       - "node.master=true"
       - "node.data=true"
       - "node.ingest=true"
-      - "node.name=es-node.{{.Task.Slot}}.{{.Node.Hostname}}"
+      - "node.name=es-node-1"
+      # - "node.name=es-node.{{.Task.Slot}}.{{.Node.Hostname}}"
       - "bootstrap.system_call_filter=false"
       - "LOGSPOUT=ignore"    
       # cluster.name: "elasticsearch" #设置集群名称为elasticsearch
