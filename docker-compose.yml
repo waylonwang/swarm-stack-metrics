@@ -218,6 +218,7 @@ services:
     #   - "5001:5001"
       # - "5044:5044"  
     environment:
+      bootstrap.system_call_filter: "false"
       TZ: ${TZ}  
     volumes:
       - nfs_elk_kibana_conf:/opt/kibana/config             
