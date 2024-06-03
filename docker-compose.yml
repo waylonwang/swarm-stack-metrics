@@ -366,9 +366,9 @@ services:
       # ES_JAVA_OPTS: "-Xms512m -Xmx512m" #设置使用jvm内存大小      
       # ES_JAVA_OPTS: "-Xms2g -Xmx2g" 
     volumes:
-      - nfs_elasticsearch_data:/usr/share/elasticsearch/data
-      - nfs_elasticsearch_plugins:/usr/share/elasticsearch/plugins
-      - nfs_elasticsearch_conf:/usr/share/elasticsearch/config
+      - nfs_elk_elasticsearch_data:/usr/share/elasticsearch/data
+      - nfs_elk_elasticsearch_plugins:/usr/share/elasticsearch/plugins
+      - nfs_elk_elasticsearch_conf:/usr/share/elasticsearch/config   
     ports:
       # - "9200:9200"
       # - "9300:9300"
@@ -431,7 +431,7 @@ services:
         protocol: tcp
         mode: host        
     volumes:
-      - nfs_kibana_conf:/usr/share/kibana/config    
+      - nfs_elk_kibana_conf:/usr/share/kibana/config          
     deploy:
       labels:    
         - traefik.enable=true
