@@ -352,16 +352,16 @@ services:
     image: elasticsearch:7.17.21
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "cluster.name=es-cluster"
+      # - "cluster.name=es-cluster"
       - "discovery.type=single-node"
-      - "discovery.zen.minimum_master_nodes=1"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      # - "discovery.zen.minimum_master_nodes=1"
+      # - "discovery.zen.ping.unicast.hosts=elasticsearch"
       - "node.master=true"
       - "node.data=true"
       - "node.ingest=true"
-      - "node.name=es-node-1"
+      # - "node.name=es-node-1"
       # - "node.name=es-node.{{.Task.Slot}}.{{.Node.Hostname}}"
-      - "bootstrap.system_call_filter=false"
+      # - "bootstrap.system_call_filter=false"
       - "LOGSPOUT=ignore"    
       # cluster.name: "elasticsearch" #设置集群名称为elasticsearch
       # discovery.type: "single-node" #以单一节点模式启动
