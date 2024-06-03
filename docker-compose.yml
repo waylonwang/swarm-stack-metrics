@@ -209,7 +209,7 @@ services:
 
   # ELK
   elk:
-    image: sebp/elk:8.13.4
+    image: sebp/elk:7.14.1
     networks: [network_cluster]
     restart: on-failure    
     # ports:
