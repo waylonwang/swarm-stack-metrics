@@ -349,7 +349,7 @@ services:
   #       constraints:
   #         - node.platform.os == linux          
 
-  elasticsearch:
+  elk-elasticsearch:
     image: elasticsearch:7.17.21
     networks: [network_cluster]
     environment:
@@ -420,7 +420,7 @@ services:
   #       delay: 5s
   #       max_attempts: 3
 
-  kibana:
+  elk-kibana:
     image: kibana:7.17.21
     networks: [network_cluster]
     environment:
