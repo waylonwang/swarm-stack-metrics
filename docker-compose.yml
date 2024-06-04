@@ -208,96 +208,96 @@ services:
           memory: 64M
 
   # ELK
-  elk:
-    image: sebp/elk:7.14.1
-    networks: [network_cluster]
-    restart: on-failure    
-    # ports:
-    #   - "5601:5601"
-    #   - "9200:9200"
-    #   - "5001:5001"
-      # - "5044:5044"  
-    environment:
-      bootstrap.system_call_filter: "false"
-      TZ: ${TZ}  
-    volumes:
-      - nfs_elk_kibana_conf:/opt/kibana/config             
-      - nfs_elk_elasticsearch_conf:/opt/elasticsearch/config   
-      - nfs_elk_logstash_conf:/opt/logstash/config    
-      - nfs_elk_logstash_pipelines:/etc/logstash/conf.d   
-      - nfs_elk_elasticsearch_plugins:/opt/elasticsearch/plugins
-      - nfs_elk_elasticsearch_data:/var/lib/elasticsearch
-    deploy:
-      # labels:    
-      #   - traefik.enable=true
-      #   - traefik.http.routers.elk.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
-      #   - traefik.http.routers.elk.entrypoints=websecure
-      #   - traefik.http.routers.elk.service=elk
-      #   - traefik.http.routers.elk.middlewares=auth,normal-chain@file
-      #   - traefik.http.services.elk.loadbalancer.server.port=5601
-      #   - homepage.group=Metrics & Monitor
-      #   - homepage.name=ELK
-      #   - homepage.icon=kibana.png
-      #   - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-      #   - homepage.description=ELK
-      #   - homepage.siteMonitor=http://elk:5601
-      #   - homepage.weight=20             
-      replicas: 0     
-      placement:
-        constraints:
-          - node.labels.type == nas
-          - node.labels.media == true
-          - node.labels.nas == primary 
+  # elk:
+  #   image: sebp/elk:7.14.1
+  #   networks: [network_cluster]
+  #   restart: on-failure    
+  #   # ports:
+  #   #   - "5601:5601"
+  #   #   - "9200:9200"
+  #   #   - "5001:5001"
+  #     # - "5044:5044"  
+  #   environment:
+  #     bootstrap.system_call_filter: "false"
+  #     TZ: ${TZ}  
+  #   volumes:
+  #     - nfs_elk_kibana_conf:/opt/kibana/config             
+  #     - nfs_elk_elasticsearch_conf:/opt/elasticsearch/config   
+  #     - nfs_elk_logstash_conf:/opt/logstash/config    
+  #     - nfs_elk_logstash_pipelines:/etc/logstash/conf.d   
+  #     - nfs_elk_elasticsearch_plugins:/opt/elasticsearch/plugins
+  #     - nfs_elk_elasticsearch_data:/var/lib/elasticsearch
+  #   deploy:
+  #     # labels:    
+  #     #   - traefik.enable=true
+  #     #   - traefik.http.routers.elk.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
+  #     #   - traefik.http.routers.elk.entrypoints=websecure
+  #     #   - traefik.http.routers.elk.service=elk
+  #     #   - traefik.http.routers.elk.middlewares=auth,normal-chain@file
+  #     #   - traefik.http.services.elk.loadbalancer.server.port=5601
+  #     #   - homepage.group=Metrics & Monitor
+  #     #   - homepage.name=ELK
+  #     #   - homepage.icon=kibana.png
+  #     #   - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
+  #     #   - homepage.description=ELK
+  #     #   - homepage.siteMonitor=http://elk:5601
+  #     #   - homepage.weight=20             
+  #     replicas: 0     
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == nas
+  #         - node.labels.media == true
+  #         - node.labels.nas == primary 
 
-  logspout-vm:
-    image: gliderlabs/logspout:v3.2.14
-    command: syslog+tcp://elk:5000
-    networks: [network_cluster]
-    # environment:
-    #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
-    #   tag: "<custom tag>"
-    volumes:
-      - /etc/hostname:/etc/host_hostname:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      mode: replicated #global
-      replicas: 0
-      # resources:
-      #   limits:
-      #     cpus: '0.20'
-      #     memory: 256M
-      #   reservations:
-      #     cpus: '0.10'
-      #     memory: 128M      
-      placement:
-        constraints:
-          - node.platform.os == linux    
-          - node.labels.type == vm      
+  # logspout-vm:
+  #   image: gliderlabs/logspout:v3.2.14
+  #   command: syslog+tcp://elk:5000
+  #   networks: [network_cluster]
+  #   # environment:
+  #   #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
+  #   #   tag: "<custom tag>"
+  #   volumes:
+  #     - /etc/hostname:/etc/host_hostname:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   deploy:
+  #     mode: replicated #global
+  #     replicas: 0
+  #     # resources:
+  #     #   limits:
+  #     #     cpus: '0.20'
+  #     #     memory: 256M
+  #     #   reservations:
+  #     #     cpus: '0.10'
+  #     #     memory: 128M      
+  #     placement:
+  #       constraints:
+  #         - node.platform.os == linux    
+  #         - node.labels.type == vm      
 
-  logspout-router:
-    image: gliderlabs/logspout:v3.2.14
-    command: syslog+tcp://192.168.11.117:5000
-    networks: [network_cluster]
-    # environment:
-    #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
-    #   tag: "<custom tag>"
-    volumes:
-      - /etc/hostname:/etc/host_hostname:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      mode: replicated
-      replicas: 0
-      # resources:
-      #   limits:
-      #     cpus: '0.20'
-      #     memory: 256M
-      #   reservations:
-      #     cpus: '0.10'
-      #     memory: 128M      
-      placement:
-        constraints:
-          - node.role == manager
-          - node.labels.type == router
+  # logspout-router:
+  #   image: gliderlabs/logspout:v3.2.14
+  #   command: syslog+tcp://192.168.11.117:5000
+  #   networks: [network_cluster]
+  #   # environment:
+  #   #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
+  #   #   tag: "<custom tag>"
+  #   volumes:
+  #     - /etc/hostname:/etc/host_hostname:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 0
+  #     # resources:
+  #     #   limits:
+  #     #     cpus: '0.20'
+  #     #     memory: 256M
+  #     #   reservations:
+  #     #     cpus: '0.10'
+  #     #     memory: 128M      
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
+  #         - node.labels.type == router
 
   # swarm-log:
   #   image: bekt/logspout-logstash:latest
