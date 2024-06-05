@@ -405,10 +405,10 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == nas
-          - node.labels.nas == primary  
-          # - node.labels.type == vm
-          # - node.labels.metrics == true          
+          # - node.labels.type == nas
+          # - node.labels.nas == primary  
+          - node.labels.type == vm
+          - node.labels.metrics == true          
       replicas: 1
       # resources:
       #   limits:
@@ -464,8 +464,10 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.labels.type == nas
-          - node.labels.nas == primary   
+          # - node.labels.type == nas
+          # - node.labels.nas == primary   
+          - node.labels.type == vm
+          - node.labels.metrics == true            
       restart_policy:
         condition: on-failure
 
@@ -509,10 +511,10 @@ services:
         - homepage.weight=20    
       placement:
         constraints:
-          - node.labels.type == nas
-          - node.labels.nas == primary 
-          # - node.labels.type == vm
-          # - node.labels.metrics == true                
+          # - node.labels.type == nas
+          # - node.labels.nas == primary 
+          - node.labels.type == vm
+          - node.labels.metrics == true                
       replicas: 1
       # resources:
       #   limits:
