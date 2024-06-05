@@ -422,6 +422,31 @@ services:
   #       delay: 5s
   #       max_attempts: 3
 
+  fluentd:
+    image: ruanbekker/fluentd-elasticsearch
+    environment:
+      FLUENTD_CONF: 'fluent.conf'
+      FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
+    ports:
+      - 24224:24224
+      - 24224:24224/udp
+    user: root
+    configs:
+      - source: metrics.fluentd.conf_elk-elasticsearch
+        target: /fluentd/etc/fluent.conf
+    networks:
+      - network_cluster
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.type == nas
+          - node.labels.media == true
+          - node.labels.nas == primary   
+      restart_policy:
+        condition: on-failure
+
   elk-kibana:
     image: kibana:7.17.21
     networks: [network_cluster]
@@ -565,11 +590,7 @@ networks:
     external: true
 
 configs:
-  fluentd_conf.v1:
-    external: true
-  fluentd_conf.v2:
-    external: true
-  fluentd_conf.v3:
+  metrics.fluentd.conf_elk-elasticsearch:
     external: true    
 
 x-common-keys-volume: &common-keys-volume
