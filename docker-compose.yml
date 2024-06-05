@@ -463,7 +463,7 @@ services:
         # - "12201:12201/udp"
         # - 5601:5601      
       - target: 5601
-        published: 5601
+        published: 5602
         protocol: tcp
         mode: host        
     volumes:
