@@ -448,11 +448,11 @@ services:
       restart_policy:
         condition: on-failure
 
-  elk-kibana:
+  kibana:
     image: kibana:7.17.21
     networks: [network_cluster]
     environment:
-      - SERVER_NAME=kibana.${DOMAIN:-localhost}
+      # - SERVER_NAME=kibana.${DOMAIN:-localhost}
       # - ELASTICSEARCH_URL=http://192.168.11.99:9200
       # - ELASTICSEARCH_HOSTS=http://192.168.11.99:9200
       # - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
@@ -487,11 +487,11 @@ services:
         - homepage.weight=20    
       placement:
         constraints:
-          # - node.labels.type == nas
-          # - node.labels.media == true
-          # - node.labels.nas == primary 
-          - node.labels.type == vm
-          - node.labels.metrics == true                
+          - node.labels.type == nas
+          - node.labels.media == true
+          - node.labels.nas == primary 
+          # - node.labels.type == vm
+          # - node.labels.metrics == true                
       replicas: 1
       # resources:
       #   limits:
