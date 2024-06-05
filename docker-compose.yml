@@ -155,31 +155,31 @@ services:
           memory: 64M
 
   # PVE Exporter
-  pve-exporter:
-    # 3.0之后改了结构，只能固定到2.3.1 
-    image: prompve/prometheus-pve-exporter:2.3.1
-    networks: [network_cluster]
-    restart: on-failure
-    ports:
-      - 9221:9221
-    environment:
-      PVE_USER: ${PVE_USER}
-      PVE_TOKEN_NAME: ${PVE_TOKEN_NAME} 
-      PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE} 
-      PVE_VERIFY_SSL: ${PVE_VERIFY_SSL} 
-      TZ: ${TZ}
-    volumes:
-      - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
+  # pve-exporter:
+  #   # 3.0之后改了结构，只能固定到2.3.1 
+  #   image: prompve/prometheus-pve-exporter:2.3.1
+  #   networks: [network_cluster]
+  #   restart: on-failure
+  #   ports:
+  #     - 9221:9221
+  #   environment:
+  #     PVE_USER: ${PVE_USER}
+  #     PVE_TOKEN_NAME: ${PVE_TOKEN_NAME} 
+  #     PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE} 
+  #     PVE_VERIFY_SSL: ${PVE_VERIFY_SSL} 
+  #     TZ: ${TZ}
+  #   volumes:
+  #     - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == vm
+  #         - node.labels.metrics == true
+  #     resources:
+  #       limits:
+  #         memory: 128M
+  #       reservations:
+  #         memory: 64M
 
   # PVE Exporter
   pve-exporter3:
