@@ -426,8 +426,8 @@ services:
     image: ruanbekker/fluentd-elasticsearch
     environment:
       FLUENTD_CONF: 'fluent.conf'
-      # FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
-      FLUENTD_HOSTNAME: 'HomeNAS'
+      FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
+      # FLUENTD_HOSTNAME: 'HomeNAS'
     ports:
       - 24224:24224
       - 24224:24224/udp
