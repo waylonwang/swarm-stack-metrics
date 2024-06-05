@@ -384,9 +384,11 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == nas
-          - node.labels.media == true
-          - node.labels.nas == primary  
+          # - node.labels.type == nas
+          # - node.labels.media == true
+          # - node.labels.nas == primary  
+          - node.labels.type == vm
+          - node.labels.metrics == true          
       replicas: 1
       # resources:
       #   limits:
@@ -459,9 +461,11 @@ services:
         - homepage.weight=20    
       placement:
         constraints:
-          - node.labels.type == nas
-          - node.labels.media == true
-          - node.labels.nas == primary       
+          # - node.labels.type == nas
+          # - node.labels.media == true
+          # - node.labels.nas == primary 
+          - node.labels.type == vm
+          - node.labels.metrics == true                
       replicas: 1
       # resources:
       #   limits:
