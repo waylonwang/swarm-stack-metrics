@@ -1,20 +1,74 @@
+---
 # Update Time: 2024-05-31 01:10
 version: "3.4"
 
-services:
-  # Grafana
-  grafana:
-    image: grafana/grafana:latest
+x-defines:
+  service-common: &service-common-ref
     networks: [network_cluster]
     restart: on-failure
+  deploy-common: &deploy-common-ref
+    mode: replicated
+    replicas: 1
+  placement-default: &placement-default-ref
+    placement:
+      constraints:
+        - node.labels.type == vm
+        - node.labels.mertics == true
+  placement-nas: &placement-nas-ref
+    placement:
+      constraints:
+        - node.labels.type == nas
+        - node.labels.nas == primary
+  resource-low-128m: &resource-low-128m-ref
+    resources:
+      limits:
+        memory: 128M
+      reservations:
+        memory: 32M
+  resource-low-256m: &resource-low-256m-ref
+    resources:
+      limits:
+        memory: 256M
+      reservations:
+        memory: 64M        
+  resource-medium-512m: &resource-medium-512m-ref
+    resources:
+      limits:
+        memory: 512M
+      reservations:
+        memory: 64M
+  resource-high-4g: &resource-medium-4g-ref
+    resources:
+      limits:
+        cpus: '2'
+        memory: 4G
+      reservations:
+        cpus: '1'
+        memory: 2G          
+  driver-common: &driver-common-ref
+    type: nfs
+    o: addr=${NFS_SERVER},rw,nfsvers=4
+
+services:
+  # ------------------------------------------------------------
+  # Grafana监控数据看板
+  # ------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    <<: *service-common-ref
     environment:
       # 直接使用Portainer容器内的环境变量
       PUID: 1000
-      PGID: 1000       
+      PGID: 1000
       TZ: ${TZ}
     volumes:
       - nfs_grafana_data:/var/lib/grafana
       - nfs_grafana_conf:/usr/share/grafana/conf
+    logging:
+      driver: fluentd
+      options:
+        tag: docker.metrics.grafana
+        fluentd-async-connect: "true"
     deploy:
       labels:
         - traefik.enable=true
@@ -33,39 +87,30 @@ services:
         - homepage.widget.type=grafana
         - homepage.widget.url=http://grafana:3000
         - homepage.widget.username=${HOMEPAGE_GRAFANA_USERNAME}
-        - homepage.widget.password=${HOMEPAGE_GRAFANA_PASSWORD}        
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.grafana
-        fluentd-async-connect: "true"            
-          
-  # Prometheus
+        - homepage.widget.password=${HOMEPAGE_GRAFANA_PASSWORD}
+      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
+
+  # ------------------------------------------------------------
+  # Prometheus度量服务
+  # ------------------------------------------------------------
   prometheus:
     image: prom/prometheus:latest
     command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/data --web.console.libraries=/usr/share/prometheus/console_libraries --web.enable-lifecycle --web.console.templates=/usr/share/prometheus/consoles
-    networks: [network_cluster]
-    restart: on-failure
+    <<: *service-common-ref
     environment:
       # 直接使用Portainer容器内的环境变量
       PUID: 0
-      PGID: 0 
+      PGID: 0
       TZ: ${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - nfs_prometheus_conf:/etc/prometheus
       - nfs_prometheus_data:/data
+    logging:
+      driver: fluentd
+      options:
+        tag: docker.metrics.prometheus
+        fluentd-async-connect: "true"
     deploy:
       labels:
         - traefik.enable=true
@@ -81,45 +126,28 @@ services:
         - homepage.description=Prometheus
         - homepage.siteMonitor=http://prometheus:9090
         - homepage.weight=11
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
-      # resources:
-      #   limits:
-      #     memory: 512M
-      #   reservations:
-      #     memory: 64M
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.prometheus
-        fluentd-async-connect: "true"           
+      <<: [*deploy-common-ref, *placement-default-ref, *resource-medium-512m-ref]
 
-  # AlertManager
+  # ------------------------------------------------------------
+  # AlertManager报警服务
+  # ------------------------------------------------------------
   alertmanager:
     image: prom/alertmanager:latest
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
-    networks: [network_cluster]
-    restart: on-failure
-    environment:   
+    <<: *service-common-ref
+    environment:
       TZ: ${TZ}
     volumes:
       - nfs_alertmanager:/etc/alertmanager
+    logging:
+      driver: fluentd
+      options:
+        tag: docker.metrics.alertmanager
+        fluentd-async-connect: "true"
     deploy:
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
+      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
       labels:
         - traefik.enable=true
         - traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN_SWARM}`,`alertmanager.${DOMAIN_EMERGENCY}`)
@@ -134,13 +162,10 @@ services:
         - homepage.description=Prometheus Alert Manager
         - homepage.siteMonitor=http://alertmanager:9093
         - homepage.weight=12
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.alertmanager
-        fluentd-async-connect: "true"     
 
-  # SNMP Exporter
+  # ------------------------------------------------------------
+  # SNMP Exporter度量提取器
+  # ------------------------------------------------------------
   snmp-exporter:
     image: prom/snmp-exporter:v0.22.0
     command:
@@ -154,24 +179,18 @@ services:
     volumes:
       - nfs_snmp-exporter:/etc/snmp_exporter
     deploy:
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
+      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
     logging:
       driver: fluentd
       options:
         tag: docker.metrics.snmp-exporter
-        fluentd-async-connect: "true"   
+        fluentd-async-connect: "true"
 
-  # PVE Exporter
+  # ------------------------------------------------------------
+  # PVE Exporter度量提取器
+  # ------------------------------------------------------------
   # pve-exporter:
-  #   # 3.0之后改了结构，只能固定到2.3.1 
+  #   # 3.0之后改了结构，只能固定到2.3.1
   #   image: prompve/prometheus-pve-exporter:2.3.1
   #   networks: [network_cluster]
   #   restart: on-failure
@@ -179,9 +198,9 @@ services:
   #     - 9221:9221
   #   environment:
   #     PVE_USER: ${PVE_USER}
-  #     PVE_TOKEN_NAME: ${PVE_TOKEN_NAME} 
-  #     PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE} 
-  #     PVE_VERIFY_SSL: ${PVE_VERIFY_SSL} 
+  #     PVE_TOKEN_NAME: ${PVE_TOKEN_NAME}
+  #     PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE}
+  #     PVE_VERIFY_SSL: ${PVE_VERIFY_SSL}
   #     TZ: ${TZ}
   #   volumes:
   #     - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
@@ -195,60 +214,170 @@ services:
   #         memory: 128M
   #       reservations:
   #         memory: 64M
-
-  # PVE Exporter
   pve-exporter3:
     image: prompve/prometheus-pve-exporter:latest
-    networks: [network_cluster]
-    restart: on-failure
+    <<: *service-common-ref
     ports:
       - 9222:9221
     environment:
       PVE_USER: ${PVE_USER}
-      PVE_TOKEN_NAME: ${PVE_TOKEN_NAME} 
-      PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE} 
-      PVE_VERIFY_SSL: ${PVE_VERIFY_SSL} 
+      PVE_TOKEN_NAME: ${PVE_TOKEN_NAME}
+      PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE}
+      PVE_VERIFY_SSL: ${PVE_VERIFY_SSL}
       TZ: ${TZ}
     # volumes:
       # - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
     deploy:
-      placement:
-        constraints:
-          - node.labels.type == vm
-          - node.labels.metrics == true
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
+      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
     logging:
       driver: fluentd
       options:
         tag: docker.metrics.pve-exporter3
-        fluentd-async-connect: "true"   
+        fluentd-async-connect: "true"
 
+  # ------------------------------------------------------------
+  # EFK Stack: ElasticSearch全文检索数据库
+  # ------------------------------------------------------------
+  elasticsearch:
+    image: elasticsearch:7.17.21
+    <<: *service-common-ref
+    environment:
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "discovery.type=single-node"
+      - "node.master=true"
+      - "node.data=true"
+      - "node.ingest=true"
+      - "LOGSPOUT=ignore"
+      # - "cluster.name=es-cluster"
+      # - "discovery.zen.minimum_master_nodes=1"
+      # - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      # - "node.name=es-node-1"
+      # - "node.name=es-node.{{.Task.Slot}}.{{.Node.Hostname}}"
+      # - "bootstrap.system_call_filter=false"
+      # cluster.name: "elasticsearch" #设置集群名称为elasticsearch
+      # discovery.type: "single-node" #以单一节点模式启动
+      # ES_JAVA_OPTS: "-Xms512m -Xmx512m" #设置使用jvm内存大小
+      # ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    volumes:
+      - nfs_elk_elasticsearch_data:/usr/share/elasticsearch/data
+      - nfs_elk_elasticsearch_plugins:/usr/share/elasticsearch/plugins
+      - nfs_elk_elasticsearch_conf:/usr/share/elasticsearch/config
+    ports:
+      # - "9200:9200"
+      # - "9300:9300"
+      - target: 9200
+        published: 9200
+        protocol: tcp
+        mode: host
+    deploy:
+      <<: [*deploy-common-ref, *placement-nas-ref, *resource-high-4g]
+      # resources:
+      #   limits:
+      #     cpus: '2'
+      #     memory: 2G
+      restart_policy:
+        condition: on-failure
+        # delay: 5s
+        # max_attempts: 3
+
+  # ------------------------------------------------------------
+  # EFK Stack: Fluentd日志采集器
+  # ------------------------------------------------------------
+  fluentd:
+    image: ruanbekker/fluentd-elasticsearch
+    <<: *service-common-ref
+    environment:
+      FLUENTD_CONF: 'fluent.conf'
+      FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
+      # FLUENTD_HOSTNAME: 'HomeNAS'
+    ports:
+      - 24224:24224
+      - 24224:24224/udp
+    user: root
+    configs:
+      - source: metrics.fluentd.conf_HomeNAS-elasticsearch
+        target: /fluentd/etc/fluent.conf
+    deploy:
+      <<: [*deploy-common-ref, *placement-nas-ref, *resource-low-128m-ref]
+      restart_policy:
+        condition: on-failure
+
+  # ------------------------------------------------------------
+  # EFK Stack: Kibana日志数据看板
+  # ------------------------------------------------------------
+  kibana:
+    image: kibana:7.17.21
+    <<: *service-common-ref
+    environment:
+      - SERVER_NAME=kibana.${DOMAIN:-localhost}
+      # - ELASTICSEARCH_URL=http://192.168.11.99:9200
+      # - ELASTICSEARCH_HOSTS=http://192.168.11.99:9200
+      # - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
+      # - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
+      # elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
+      # ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    ports:
+        # - "12201:12201/udp"
+        # - 5601:5601
+      - target: 5601
+        published: 5601
+        protocol: tcp
+        mode: host
+    volumes:
+      - nfs_elk_kibana_conf:/usr/share/kibana/config
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.kibana.rule=Host(`efk.${DOMAIN_SWARM}`,`efk.${DOMAIN_EMERGENCY}`)
+        - traefik.http.routers.kibana.entrypoints=websecure
+        - traefik.http.routers.kibana.service=kibana
+        - traefik.http.routers.kibana.middlewares=auth,normal-chain@file
+        - traefik.http.services.kibana.loadbalancer.server.port=5601
+        # - traefik.http.services.kibana.loadbalancer.server.responseTimeout=180s # 调整为你需要的时间
+        # - traefik.http.services.kibana.loadbalancer.server.idleTimeout=5m     # 调整为你需要的时间
+        - homepage.group=Metrics & Monitor
+        - homepage.name=ELK
+        - homepage.icon=kibana.png
+        - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
+        - homepage.description=ELK
+        - homepage.siteMonitor=http://kibana:5601
+        - homepage.weight=20
+      <<: [*deploy-common-ref, *placement-nas-ref, *resource-low-256m-ref]
+      # resources:
+      #   limits:
+      #     cpus: '2'
+      #     memory: 1G
+      restart_policy:
+        condition: on-failure
+        # delay: 5s
+        # max_attempts: 3
+
+
+  # ------------------------------------------------------------
   # ELK
+  # ------------------------------------------------------------
   # elk:
   #   image: sebp/elk:7.14.1
   #   networks: [network_cluster]
-  #   restart: on-failure    
+  #   restart: on-failure
   #   # ports:
   #   #   - "5601:5601"
   #   #   - "9200:9200"
   #   #   - "5001:5001"
-  #     # - "5044:5044"  
+  #     # - "5044:5044"
   #   environment:
   #     bootstrap.system_call_filter: "false"
-  #     TZ: ${TZ}  
+  #     TZ: ${TZ}
   #   volumes:
-  #     - nfs_elk_kibana_conf:/opt/kibana/config             
-  #     - nfs_elk_elasticsearch_conf:/opt/elasticsearch/config   
-  #     - nfs_elk_logstash_conf:/opt/logstash/config    
-  #     - nfs_elk_logstash_pipelines:/etc/logstash/conf.d   
+  #     - nfs_elk_kibana_conf:/opt/kibana/config
+  #     - nfs_elk_elasticsearch_conf:/opt/elasticsearch/config
+  #     - nfs_elk_logstash_conf:/opt/logstash/config
+  #     - nfs_elk_logstash_pipelines:/etc/logstash/conf.d
   #     - nfs_elk_elasticsearch_plugins:/opt/elasticsearch/plugins
   #     - nfs_elk_elasticsearch_data:/var/lib/elasticsearch
   #   deploy:
-  #     # labels:    
+  #     # labels:
   #     #   - traefik.enable=true
   #     #   - traefik.http.routers.elk.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
   #     #   - traefik.http.routers.elk.entrypoints=websecure
@@ -261,14 +390,38 @@ services:
   #     #   - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
   #     #   - homepage.description=ELK
   #     #   - homepage.siteMonitor=http://elk:5601
-  #     #   - homepage.weight=20             
-  #     replicas: 0     
+  #     #   - homepage.weight=20
+  #     replicas: 0
   #     placement:
   #       constraints:
   #         - node.labels.type == nas
   #         - node.labels.media == true
-  #         - node.labels.nas == primary 
+  #         - node.labels.nas == primary
 
+  # ELK Stack: Logstash
+  # logstash:
+  #   image: logstash:8.13.4
+  #   # command: ["logstash","-f","/etc/conf/logstash.conf"]
+  #   volumes:
+  #     - nfs_logstash_conf:/usr/share/logstash/config
+  #   ports:
+  #       # - "12201:12201/udp"
+  #       - 4560:4560
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == vm
+  #         - node.labels.metrics == true
+  #     replicas: 1
+  #     resources:
+  #       limits:
+  #         cpus: '1'
+  #         memory: 1G
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 5s
+  #       max_attempts: 3
+  
   # logspout-vm:
   #   image: gliderlabs/logspout:v3.2.14
   #   command: syslog+tcp://elk:5000
@@ -288,11 +441,11 @@ services:
   #     #     memory: 256M
   #     #   reservations:
   #     #     cpus: '0.10'
-  #     #     memory: 128M      
+  #     #     memory: 128M
   #     placement:
   #       constraints:
-  #         - node.platform.os == linux    
-  #         - node.labels.type == vm      
+  #         - node.platform.os == linux
+  #         - node.labels.type == vm
 
   # logspout-router:
   #   image: gliderlabs/logspout:v3.2.14
@@ -313,7 +466,7 @@ services:
   #     #     memory: 256M
   #     #   reservations:
   #     #     cpus: '0.10'
-  #     #     memory: 128M      
+  #     #     memory: 128M
   #     placement:
   #       constraints:
   #         - node.role == manager
@@ -344,11 +497,11 @@ services:
   #     #     memory: 128M
   #     placement:
   #       constraints:
-  #         - node.platform.os == linux            
+  #         - node.platform.os == linux
 
   # fluentd:
   #   image: ruanbekker/fluentd-elasticsearch
-  #   networks: [network_cluster]    
+  #   networks: [network_cluster]
   #   user: root
   #   environment:
   #     FLUENTD_CONF: 'fluent.conf'
@@ -360,172 +513,18 @@ services:
   #   #   - nfs_fluentd_conf:/fluentd/etc/fluent.conf
   #   configs:
   #     - source: fluentd_conf.v2
-  #       target: /fluentd/etc/fluent.conf      
+  #       target: /fluentd/etc/fluent.conf
   #   deploy:
   #     mode: global
   #     restart_policy:
   #       condition: on-failure
   #     placement:
   #       constraints:
-  #         - node.platform.os == linux          
+  #         - node.platform.os == linux
 
-  # EFK Stack: ElasticSearch
-  elasticsearch:
-    image: elasticsearch:7.17.21
-    networks: [network_cluster]
-    environment:
-      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      # - "cluster.name=es-cluster"
-      - "discovery.type=single-node"
-      # - "discovery.zen.minimum_master_nodes=1"
-      # - "discovery.zen.ping.unicast.hosts=elasticsearch"
-      - "node.master=true"
-      - "node.data=true"
-      - "node.ingest=true"
-      # - "node.name=es-node-1"
-      # - "node.name=es-node.{{.Task.Slot}}.{{.Node.Hostname}}"
-      # - "bootstrap.system_call_filter=false"
-      - "LOGSPOUT=ignore"    
-      # cluster.name: "elasticsearch" #设置集群名称为elasticsearch
-      # discovery.type: "single-node" #以单一节点模式启动
-      # ES_JAVA_OPTS: "-Xms512m -Xmx512m" #设置使用jvm内存大小      
-      # ES_JAVA_OPTS: "-Xms2g -Xmx2g" 
-    volumes:
-      - nfs_elk_elasticsearch_data:/usr/share/elasticsearch/data
-      - nfs_elk_elasticsearch_plugins:/usr/share/elasticsearch/plugins
-      - nfs_elk_elasticsearch_conf:/usr/share/elasticsearch/config   
-    ports:
-      # - "9200:9200"
-      # - "9300:9300"
-      - target: 9200
-        published: 9200
-        protocol: tcp
-        mode: host      
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == nas
-          - node.labels.nas == primary  
-          # - node.labels.type == vm
-          # - node.labels.metrics == true          
-      replicas: 1
-      # resources:
-      #   limits:
-      #     cpus: '2'
-      #     memory: 2G
-      restart_policy:
-        condition: on-failure
-        # delay: 5s
-        # max_attempts: 3
-
-  # ELK Stack: Logstash
-  # logstash:
-  #   image: logstash:8.13.4
-  #   # command: ["logstash","-f","/etc/conf/logstash.conf"]
-  #   volumes:
-  #     - nfs_logstash_conf:/usr/share/logstash/config
-  #   ports:
-  #       # - "12201:12201/udp"
-  #       - 4560:4560
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == vm
-  #         - node.labels.metrics == true    
-  #     replicas: 1
-  #     resources:
-  #       limits:
-  #         cpus: '1'
-  #         memory: 1G
-  #     restart_policy:
-  #       condition: on-failure
-  #       delay: 5s
-  #       max_attempts: 3
-
-  # EFK Stack: Fluentd
-  fluentd:
-    image: ruanbekker/fluentd-elasticsearch
-    environment:
-      FLUENTD_CONF: 'fluent.conf'
-      FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
-      # FLUENTD_HOSTNAME: 'HomeNAS'
-    ports:
-      - 24224:24224
-      - 24224:24224/udp
-    user: root
-    configs:
-      - source: metrics.fluentd.conf_HomeNAS-elasticsearch
-        target: /fluentd/etc/fluent.conf
-    networks:
-      - network_cluster
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.labels.type == nas
-          - node.labels.nas == primary   
-          # - node.labels.type == vm
-          # - node.labels.metrics == true            
-      restart_policy:
-        condition: on-failure
-
-  # EFK Stack: Kibana
-  kibana:
-    image: kibana:7.17.21
-    networks: [network_cluster]
-    environment:
-      - SERVER_NAME=kibana.${DOMAIN:-localhost}
-      # - ELASTICSEARCH_URL=http://192.168.11.99:9200
-      # - ELASTICSEARCH_HOSTS=http://192.168.11.99:9200
-      # - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
-      # - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
-      # elasticsearch.hosts: "http://elasticsearch:9200" #设置访问elasticsearch的地址
-      # ELASTICSEARCH_URL: "http://elasticsearch:9200"
-    ports:
-        # - "12201:12201/udp"
-        # - 5601:5601      
-      - target: 5601
-        published: 5601
-        protocol: tcp
-        mode: host        
-    volumes:
-      - nfs_elk_kibana_conf:/usr/share/kibana/config          
-    deploy:
-      labels:    
-        - traefik.enable=true
-        - traefik.http.routers.kibana.rule=Host(`efk.${DOMAIN_SWARM}`,`efk.${DOMAIN_EMERGENCY}`)
-        - traefik.http.routers.kibana.entrypoints=websecure
-        - traefik.http.routers.kibana.service=kibana
-        - traefik.http.routers.kibana.middlewares=auth,normal-chain@file
-        - traefik.http.services.kibana.loadbalancer.server.port=5601
-        # - traefik.http.services.kibana.loadbalancer.server.responseTimeout=180s # 调整为你需要的时间
-        # - traefik.http.services.kibana.loadbalancer.server.idleTimeout=5m     # 调整为你需要的时间
-        - homepage.group=Metrics & Monitor
-        - homepage.name=ELK
-        - homepage.icon=kibana.png
-        - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-        - homepage.description=ELK
-        - homepage.siteMonitor=http://kibana:5601
-        - homepage.weight=20    
-      placement:
-        constraints:
-          - node.labels.type == nas
-          - node.labels.nas == primary 
-          # - node.labels.type == vm
-          # - node.labels.metrics == true                
-      replicas: 1
-      # resources:
-      #   limits:
-      #     cpus: '2'
-      #     memory: 1G
-      restart_policy:
-        condition: on-failure
-        # delay: 5s
-        # max_attempts: 3
-
-  # Node Exporter
+  # ------------------------------------------------------------
+  # Node Exporter提取器
+  # ------------------------------------------------------------
   # node-exporter:
   #   image: prom/node-exporter:latest
   #   command:
@@ -537,7 +536,7 @@ services:
   #   restart: on-failure
   #   ports:
   #     - 9100:9100
-  #   environment:   
+  #   environment:
   #     TZ: ${TZ}
   #   volumes:
   #     - /proc:/etc/pve.yml
@@ -545,17 +544,19 @@ services:
   #     mode: global
   #     placement:
   #       constraints:
-  #         - node.platform.os == linux      
+  #         - node.platform.os == linux
   #     resources:
   #       limits:
   #         memory: 128M
   #       reservations:
   #         memory: 64M
 
+  # ------------------------------------------------------------
   # Cadvisor
+  # ------------------------------------------------------------
   # cadvisor:
   #   image: docker
-  #   volumes: 
+  #   volumes:
   #       - /var/run/docker.sock:/var/run/docker.sock
   #   entrypoint: ["/bin/sh","-c"]
   #   networks: [network_cluster]
@@ -569,7 +570,7 @@ services:
   #     - TZ=Asia/Shanghai
   #     - PARENT={{.Task.Name}}
   #     - CHILDNAME={{.Service.Name}}_sidecar.{{.Node.ID}}.{{.Task.ID}}
-  #   command: 
+  #   command:
   #   - |
   #     exec docker run -i --rm --network="container:$${PARENT}" \
   #           --env=TZ=Asia/Shanghai \
@@ -584,7 +585,9 @@ services:
   #           --device=/dev/kmsg \
   #           registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/cadvisor:v0.47.3
 
+  # ------------------------------------------------------------
   # Cadvisor
+  # ------------------------------------------------------------
   # cadvisor:
   #   # image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/cadvisor:v0.47.3
   #   # image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/cadvisor:v0.44.0
@@ -594,14 +597,14 @@ services:
   #     - /dev/kmsg
   #   restart: on-failure
   #   ports:
-  #     - "8080:8080"    
+  #     - "8080:8080"
   #   environment:
   #     TZ: ${TZ}
   #   volumes:
   #     - /:/rootfs:ro
   #     - /var/run:/var/run:rw
   #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro  
+  #     - /var/lib/docker/:/var/lib/docker:ro
   #     - /dev/disk:/dev/disk:ro
   #   deploy:
   #     mode: global
@@ -615,9 +618,9 @@ networks:
 
 configs:
   metrics.fluentd.conf_HomeNAS-elasticsearch:
-    external: true    
+    external: true
 
-x-common-keys-volume: &common-keys-volume
+x-driver-common-ref: &driver-common-ref
   type: nfs
   o: addr=${NFS_SERVER},rw,nfsvers=4
 
@@ -626,70 +629,71 @@ volumes:
   nfs_prometheus_conf:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
+      <<: *driver-common-ref
       device: :${NFS_DEVICE}/metrics/prometheus/conf
   nfs_prometheus_data:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
+      <<: *driver-common-ref
       device: :${NFS_DEVICE}/metrics/prometheus/data
   nfs_alertmanager:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/alertmanager        
+      <<: *driver-common-ref
+      device: :${NFS_DEVICE}/metrics/alertmanager
   nfs_grafana_data:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/grafana/data        
+      <<: *driver-common-ref
+      device: :${NFS_DEVICE}/metrics/grafana/data
   nfs_grafana_conf:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
+      <<: *driver-common-ref
       device: :${NFS_DEVICE}/metrics/grafana/conf
   nfs_snmp-exporter:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
+      <<: *driver-common-ref
       device: :${NFS_DEVICE}/metrics/snmp-exporter
   nfs_pve-exporter_src:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
+      <<: *driver-common-ref
       device: :${NFS_DEVICE}/metrics/pve-exporter/prometheus-pve-exporter/src/pve_exporter
   nfs_elk_elasticsearch_data:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
+      <<: *driver-common-ref
       device: :${NFS_DEVICE}/metrics/elk/elasticsearch/data
   nfs_elk_elasticsearch_plugins:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elk/elasticsearch/plugins  
+      <<: *driver-common-ref
+      device: :${NFS_DEVICE}/metrics/elk/elasticsearch/plugins
   nfs_elk_elasticsearch_conf:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elk/elasticsearch/config      
+      <<: *driver-common-ref
+      device: :${NFS_DEVICE}/metrics/elk/elasticsearch/config
   nfs_elk_logstash_conf:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elk/logstash/conf  
+      <<: *driver-common-ref
+      device: :${NFS_DEVICE}/metrics/elk/logstash/conf
   nfs_elk_logstash_pipelines:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elk/logstash/pipelines           
+      <<: *driver-common-ref
+      device: :${NFS_DEVICE}/metrics/elk/logstash/pipelines
   nfs_elk_kibana_conf:
     driver: local
     driver_opts:
-      <<: *common-keys-volume
-      device: :${NFS_DEVICE}/metrics/elk/kibana/config         
+      <<: *driver-common-ref
+      device: :${NFS_DEVICE}/metrics/elk/kibana/config
   # nfs_fluentd_conf:
   #   driver: local
   #   driver_opts:
-  #     <<: *common-keys-volume
-  #     device: :${NFS_DEVICE}/metrics/fluentd/conf/fluentd.conf          
+  #     <<: *driver-common-ref
+  #     device: :${NFS_DEVICE}/metrics/fluentd/conf/fluentd.conf
+...
