@@ -620,10 +620,6 @@ configs:
   metrics.fluentd.conf_HomeNAS-elasticsearch:
     external: true
 
-x-driver-common-ref: &driver-common-ref
-  type: nfs
-  o: addr=${NFS_SERVER},rw,nfsvers=4
-
 volumes:
   # NFS
   nfs_prometheus_conf:
