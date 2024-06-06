@@ -495,10 +495,10 @@ services:
     deploy:
       labels:    
         - traefik.enable=true
-        - traefik.http.routers.kibana.rule=Host(`elk.${DOMAIN_SWARM}`,`elk.${DOMAIN_EMERGENCY}`)
+        - traefik.http.routers.kibana.rule=Host(`efk.${DOMAIN_SWARM}`,`efk.${DOMAIN_EMERGENCY}`)
         - traefik.http.routers.kibana.entrypoints=websecure
         - traefik.http.routers.kibana.service=kibana
-        - traefik.http.routers.kibana.middlewares=normal-chain@file
+        - traefik.http.routers.kibana.middlewares=auth,normal-chain@file
         - traefik.http.services.kibana.loadbalancer.server.port=5601
         # - traefik.http.services.kibana.loadbalancer.server.responseTimeout=180s # 调整为你需要的时间
         # - traefik.http.services.kibana.loadbalancer.server.idleTimeout=5m     # 调整为你需要的时间
