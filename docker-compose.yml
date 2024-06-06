@@ -250,12 +250,12 @@ services:
     environment:
       <<: *env-common-ref
       # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      - "discovery.type=single-node"
-      - "node.master=true"
-      - "node.data=true"
-      - "node.ingest=true"
-      - "LOGSPOUT=ignore"
+      ES_JAVA_OPTS: -Xms2g -Xmx2g
+      discovery.type: single-node
+      node.master: "true"
+      node.data: "true"
+      node.ingest: "true"
+      LOGSPOUT: ignore"
       # - "cluster.name=es-cluster"
       # - "discovery.zen.minimum_master_nodes=1"
       # - "discovery.zen.ping.unicast.hosts=elasticsearch"
@@ -283,10 +283,6 @@ services:
       #   limits:
       #     cpus: '2'
       #     memory: 2G
-      restart_policy:
-        condition: on-failure
-        # delay: 5s
-        # max_attempts: 3
 
   # ------------------------------------------------------------
   # EFK Stack: Fluentd日志采集器
@@ -308,8 +304,6 @@ services:
         target: /fluentd/etc/fluent.conf
     deploy:
       <<: [*deploy-common-ref, *placement-nas-ref, *resource-low-128m-ref]
-      restart_policy:
-        condition: on-failure
 
   # ------------------------------------------------------------
   # EFK Stack: Kibana日志数据看板
@@ -319,7 +313,7 @@ services:
     image: kibana:7.17.21
     environment:
       <<: *env-common-ref
-      - SERVER_NAME=kibana.${DOMAIN:-localhost}
+      SERVER_NAME: kibana.${DOMAIN:-localhost}
       # - ELASTICSEARCH_URL=http://192.168.11.99:9200
       # - ELASTICSEARCH_HOSTS=http://192.168.11.99:9200
       # - ELASTICSEARCH_URL=${ELASTICSEARCH_HOST:-http://elasticsearch}:${ELASTICSEARCH_PORT:-9200}
@@ -357,10 +351,6 @@ services:
       #   limits:
       #     cpus: '2'
       #     memory: 1G
-      restart_policy:
-        condition: on-failure
-        # delay: 5s
-        # max_attempts: 3
 
 
   # ------------------------------------------------------------
