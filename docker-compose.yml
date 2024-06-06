@@ -37,11 +37,11 @@ x-defines:
         memory: 512M
       reservations:
         memory: 64M
-  resource-high-4g: &resource-high-4g-ref
+  resource-high-6g: &resource-high-6g-ref
     resources:
       limits:
         cpus: '2'
-        memory: 4G
+        memory: 6G
       reservations:
         cpus: '1'
         memory: 2G          
@@ -271,7 +271,7 @@ services:
         protocol: tcp
         mode: host
     deploy:
-      <<: [*deploy-common-ref, *placement-nas-ref, *resource-high-4g-ref]
+      <<: [*deploy-common-ref, *placement-nas-ref, *resource-high-6g-ref]
       # resources:
       #   limits:
       #     cpus: '2'
