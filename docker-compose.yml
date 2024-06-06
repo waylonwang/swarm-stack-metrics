@@ -13,7 +13,7 @@ x-defines:
     placement:
       constraints:
         - node.labels.type == vm
-        - node.labels.mertics == true
+        - node.labels.metrics == true
   placement-nas: &placement-nas-ref
     placement:
       constraints:
@@ -37,13 +37,11 @@ x-defines:
         memory: 512M
       reservations:
         memory: 64M
-  resource-high-6g: &resource-high-6g-ref
+  resource-high-4g: &resource-high-4g-ref
     resources:
       limits:
-        cpus: '2'
-        memory: 6G
+        memory: 4G
       reservations:
-        cpus: '1'
         memory: 2G          
   driver-common: &driver-common-ref
     type: nfs
@@ -271,7 +269,7 @@ services:
         protocol: tcp
         mode: host
     deploy:
-      <<: [*deploy-common-ref, *placement-nas-ref]
+      <<: [*deploy-common-ref, *placement-nas-ref, *resource-high-4g-ref]
       # resources:
       #   limits:
       #     cpus: '2'
