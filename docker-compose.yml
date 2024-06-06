@@ -6,9 +6,18 @@ x-defines:
   service-common: &service-common-ref
     networks: [network_cluster]
     restart: on-failure
+  env-common: &env-common-ref
+    NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,::1}
+    TZ: ${TZ:-Asia/Shanghai}    
+  env-proxy: &env-proxy-ref
+    HTTP_PROXY: ${OPENCLASH_HTTP_PROXY}
+    HTTPS_PROXY: ${OPENCLASH_HTTP_PROXY}
   deploy-common: &deploy-common-ref
     mode: replicated
     replicas: 1
+    restart_policy:
+      condition: on-failure
+      delay: 5s      
   placement-default: &placement-default-ref
     placement:
       constraints:
@@ -52,13 +61,13 @@ services:
   # Grafana监控数据看板
   # ------------------------------------------------------------
   grafana:
-    image: grafana/grafana:latest
     <<: *service-common-ref
+    image: grafana/grafana:latest
     environment:
+      <<: *env-common-ref
       # 直接使用Portainer容器内的环境变量
       PUID: 1000
       PGID: 1000
-      TZ: ${TZ}
     volumes:
       - nfs_grafana_data:/var/lib/grafana
       - nfs_grafana_conf:/usr/share/grafana/conf
@@ -92,14 +101,14 @@ services:
   # Prometheus度量服务
   # ------------------------------------------------------------
   prometheus:
+    <<: *service-common-ref
     image: prom/prometheus:latest
     command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/data --web.console.libraries=/usr/share/prometheus/console_libraries --web.enable-lifecycle --web.console.templates=/usr/share/prometheus/consoles
-    <<: *service-common-ref
     environment:
+      <<: *env-common-ref
       # 直接使用Portainer容器内的环境变量
       PUID: 0
       PGID: 0
-      TZ: ${TZ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - nfs_prometheus_conf:/etc/prometheus
@@ -130,13 +139,13 @@ services:
   # AlertManager报警服务
   # ------------------------------------------------------------
   alertmanager:
+    <<: *service-common-ref
     image: prom/alertmanager:latest
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
-    <<: *service-common-ref
     environment:
-      TZ: ${TZ}
+      <<: *env-common-ref
     volumes:
       - nfs_alertmanager:/etc/alertmanager
     logging:
@@ -165,24 +174,23 @@ services:
   # SNMP Exporter度量提取器
   # ------------------------------------------------------------
   snmp-exporter:
+    <<: *service-common-ref
     image: prom/snmp-exporter:v0.22.0
     command:
       - "--config.file=/etc/snmp_exporter/snmp.yml"
-    networks: [network_cluster]
-    restart: on-failure
     ports:
       - 9116:9116
     environment:
-      TZ: ${TZ}
+      <<: *env-common-ref
     volumes:
       - nfs_snmp-exporter:/etc/snmp_exporter
-    deploy:
-      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
     logging:
       driver: fluentd
       options:
         tag: docker.metrics.snmp-exporter
         fluentd-async-connect: "true"
+    deploy:
+      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
 
   # ------------------------------------------------------------
   # PVE Exporter度量提取器
@@ -213,33 +221,34 @@ services:
   #       reservations:
   #         memory: 64M
   pve-exporter3:
-    image: prompve/prometheus-pve-exporter:latest
     <<: *service-common-ref
+    image: prompve/prometheus-pve-exporter:latest
     ports:
       - 9222:9221
     environment:
+      <<: *env-common-ref
       PVE_USER: ${PVE_USER}
       PVE_TOKEN_NAME: ${PVE_TOKEN_NAME}
       PVE_TOKEN_VALUE: ${PVE_TOKEN_VALUE}
       PVE_VERIFY_SSL: ${PVE_VERIFY_SSL}
-      TZ: ${TZ}
     # volumes:
       # - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
-    deploy:
-      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
     logging:
       driver: fluentd
       options:
         tag: docker.metrics.pve-exporter3
         fluentd-async-connect: "true"
+    deploy:
+      <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
 
   # ------------------------------------------------------------
   # EFK Stack: ElasticSearch全文检索数据库
   # ------------------------------------------------------------
   elasticsearch:
-    image: elasticsearch:7.17.21
     <<: *service-common-ref
+    image: elasticsearch:7.17.21
     environment:
+      <<: *env-common-ref
       # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - "discovery.type=single-node"
@@ -283,9 +292,10 @@ services:
   # EFK Stack: Fluentd日志采集器
   # ------------------------------------------------------------
   fluentd:
-    image: ruanbekker/fluentd-elasticsearch
     <<: *service-common-ref
+    image: ruanbekker/fluentd-elasticsearch
     environment:
+      <<: *env-common-ref
       FLUENTD_CONF: 'fluent.conf'
       FLUENTD_HOSTNAME: '{{.Node.Hostname}}'
       # FLUENTD_HOSTNAME: 'HomeNAS'
@@ -305,9 +315,10 @@ services:
   # EFK Stack: Kibana日志数据看板
   # ------------------------------------------------------------
   kibana:
-    image: kibana:7.17.21
     <<: *service-common-ref
+    image: kibana:7.17.21
     environment:
+      <<: *env-common-ref
       - SERVER_NAME=kibana.${DOMAIN:-localhost}
       # - ELASTICSEARCH_URL=http://192.168.11.99:9200
       # - ELASTICSEARCH_HOSTS=http://192.168.11.99:9200
