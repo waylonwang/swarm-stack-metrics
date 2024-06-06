@@ -37,7 +37,7 @@ x-defines:
         memory: 512M
       reservations:
         memory: 64M
-  resource-high-4g: &resource-medium-4g-ref
+  resource-high-4g: &resource-high-4g-ref
     resources:
       limits:
         cpus: '2'
