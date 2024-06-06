@@ -271,7 +271,7 @@ services:
         protocol: tcp
         mode: host
     deploy:
-      <<: [*deploy-common-ref, *placement-nas-ref, *resource-high-6g-ref]
+      <<: [*deploy-common-ref, *placement-nas-ref]
       # resources:
       #   limits:
       #     cpus: '2'
