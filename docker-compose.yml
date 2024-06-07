@@ -342,7 +342,7 @@ services:
         - homepage.group=Metrics & Monitor
         - homepage.name=ELK
         - homepage.icon=kibana.png
-        - homepage.href=https://elk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
+        - homepage.href=https://efk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
         - homepage.description=ELK
         - homepage.siteMonitor=http://kibana:5601
         - homepage.weight=20
