@@ -88,7 +88,7 @@ services:
         - homepage.name=Grafana
         - homepage.icon=grafana.png
         - homepage.href=https://grafana.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-        - homepage.description=Grafana
+        - homepage.description=Grafana监控数据看板
         - homepage.siteMonitor=http://grafana:3000
         - homepage.weight=10
         - homepage.widget.type=grafana
@@ -98,7 +98,7 @@ services:
       <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
 
   # ------------------------------------------------------------
-  # Prometheus度量服务
+  # Prometheus监控度量系统
   # ------------------------------------------------------------
   prometheus:
     <<: *service-common-ref
@@ -130,7 +130,7 @@ services:
         - homepage.name=Prometheus
         - homepage.icon=prometheus.png
         - homepage.href=https://prometheus.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-        - homepage.description=Prometheus
+        - homepage.description=Prometheus监控度量系统
         - homepage.siteMonitor=http://prometheus:9090
         - homepage.weight=11
       <<: [*deploy-common-ref, *placement-default-ref, *resource-medium-512m-ref]
@@ -166,7 +166,7 @@ services:
         - homepage.name=AlertManager
         - homepage.icon=alertmanager.png
         - homepage.href=https://alertmanager.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-        - homepage.description=Prometheus Alert Manager
+        - homepage.description=Prometheus警报管理器
         - homepage.siteMonitor=http://alertmanager:9093
         - homepage.weight=12
 
@@ -340,10 +340,10 @@ services:
         # - traefik.http.services.kibana.loadbalancer.server.responseTimeout=180s # 调整为你需要的时间
         # - traefik.http.services.kibana.loadbalancer.server.idleTimeout=5m     # 调整为你需要的时间
         - homepage.group=Metrics & Monitor
-        - homepage.name=ELK
+        - homepage.name=EFK Stack: Kibana
         - homepage.icon=kibana.png
         - homepage.href=https://efk.${DOMAIN_SWARM}:${EXTERNAL_PORT}/
-        - homepage.description=ELK
+        - homepage.description=EFK堆栈: Kibana日志数据看板
         - homepage.siteMonitor=http://kibana:5601
         - homepage.weight=20
       <<: [*deploy-common-ref, *placement-nas-ref, *resource-low-256m-ref]
