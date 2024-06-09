@@ -62,7 +62,7 @@ services:
   # ------------------------------------------------------------
   grafana:
     <<: *service-common-ref
-    image: grafana/grafana:latest
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/grafana/grafana:11.0.0
     environment:
       <<: *env-common-ref
       # 直接使用Portainer容器内的环境变量
@@ -102,7 +102,7 @@ services:
   # ------------------------------------------------------------
   prometheus:
     <<: *service-common-ref
-    image: prom/prometheus:latest
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/prom/prometheus:v2.52.0
     command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/data --web.console.libraries=/usr/share/prometheus/console_libraries --web.enable-lifecycle --web.console.templates=/usr/share/prometheus/consoles
     environment:
       <<: *env-common-ref
@@ -140,7 +140,7 @@ services:
   # ------------------------------------------------------------
   alertmanager:
     <<: *service-common-ref
-    image: prom/alertmanager:latest
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/prom/alertmanager:v0.27.0
     command:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
@@ -175,7 +175,7 @@ services:
   # ------------------------------------------------------------
   snmp-exporter:
     <<: *service-common-ref
-    image: prom/snmp-exporter:v0.22.0
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/prom/snmp-exporter:v0.26.0
     command:
       - "--config.file=/etc/snmp_exporter/snmp.yml"
     ports:
@@ -220,9 +220,9 @@ services:
   #         memory: 128M
   #       reservations:
   #         memory: 64M
-  pve-exporter3:
+  pve-exporter:
     <<: *service-common-ref
-    image: prompve/prometheus-pve-exporter:latest
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/prompve/prometheus-pve-exporter:3.4.2
     ports:
       - 9222:9221
     environment:
@@ -236,7 +236,7 @@ services:
     logging:
       driver: fluentd
       options:
-        tag: docker.metrics.pve-exporter3
+        tag: docker.metrics.pve-exporter
         fluentd-async-connect: "true"
     deploy:
       <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
@@ -246,7 +246,7 @@ services:
   # ------------------------------------------------------------
   elasticsearch:
     <<: *service-common-ref
-    image: elasticsearch:7.17.21
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/library/elasticsearch:7.17.21
     environment:
       <<: *env-common-ref
       # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -289,7 +289,7 @@ services:
   # ------------------------------------------------------------
   fluentd:
     <<: *service-common-ref
-    image: ruanbekker/fluentd-elasticsearch
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/ruanbekker/fluentd-elasticsearch:latest
     environment:
       <<: *env-common-ref
       FLUENTD_CONF: 'fluent.conf'
@@ -310,7 +310,7 @@ services:
   # ------------------------------------------------------------
   kibana:
     <<: *service-common-ref
-    image: kibana:7.17.21
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/library/kibana:7.17.21
     environment:
       <<: *env-common-ref
       SERVER_NAME: kibana.${DOMAIN:-localhost}
