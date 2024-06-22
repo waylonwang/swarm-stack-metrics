@@ -309,7 +309,7 @@ services:
       - 24224:24224/udp
     user: root
     configs:
-      - source: metrics.fluentd.conf_HomeNAS-elasticsearch
+      - source: metrics.fluentd.conf_HomeNAS-elasticsearch_crowdsec
         target: /fluentd/etc/fluent.conf
     deploy:
       <<: [*deploy-common-ref, *placement-nas-ref, *resource-low-128m-ref]
@@ -626,7 +626,7 @@ networks:
     external: true
 
 configs:
-  metrics.fluentd.conf_HomeNAS-elasticsearch:
+  metrics.fluentd.conf_HomeNAS-elasticsearch_crowdsec:
     external: true
 
 volumes:
