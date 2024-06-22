@@ -298,7 +298,8 @@ services:
   fluentd:
     <<: *service-common-ref
     # image-ref: ruanbekker/fluentd-elasticsearch:latest
-    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/ruanbekker/fluentd-elasticsearch:latest
+    image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/cloudvalley/fluentd-es-syslog:latest
+    # image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/ruanbekker/fluentd-elasticsearch:latest
     environment:
       <<: *env-common-ref
       FLUENTD_CONF: 'fluent.conf'
