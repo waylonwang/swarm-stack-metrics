@@ -74,11 +74,11 @@ services:
     volumes:
       - nfs_grafana_data:/var/lib/grafana
       - nfs_grafana_conf:/usr/share/grafana/conf
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.grafana
-        fluentd-async-connect: "true"
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     tag: docker.metrics.grafana
+    #     fluentd-async-connect: "true"
     deploy:
       labels:
         - traefik.enable=true
@@ -117,11 +117,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - nfs_prometheus_conf:/etc/prometheus
       - nfs_prometheus_data:/data
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.prometheus
-        fluentd-async-connect: "true"
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     tag: docker.metrics.prometheus
+    #     fluentd-async-connect: "true"
     deploy:
       labels:
         - traefik.enable=true
@@ -153,11 +153,11 @@ services:
       <<: *env-common-ref
     volumes:
       - nfs_alertmanager:/etc/alertmanager
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.alertmanager
-        fluentd-async-connect: "true"
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     tag: docker.metrics.alertmanager
+    #     fluentd-async-connect: "true"
     deploy:
       <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
       labels:
@@ -190,11 +190,11 @@ services:
       <<: *env-common-ref
     volumes:
       - nfs_snmp-exporter:/etc/snmp_exporter
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.snmp-exporter
-        fluentd-async-connect: "true"
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     tag: docker.metrics.snmp-exporter
+    #     fluentd-async-connect: "true"
     deploy:
       <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
 
@@ -240,11 +240,11 @@ services:
       PVE_VERIFY_SSL: ${PVE_VERIFY_SSL}
     # volumes:
       # - nfs_pve-exporter_src:/usr/lib/python3.11/site-packages/pve_exporter
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.metrics.pve-exporter
-        fluentd-async-connect: "true"
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     tag: docker.metrics.pve-exporter
+    #     fluentd-async-connect: "true"
     deploy:
       <<: [*deploy-common-ref, *placement-default-ref, *resource-low-128m-ref]
 
