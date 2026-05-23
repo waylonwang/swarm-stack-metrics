@@ -4,7 +4,7 @@ version: "3.4"
 
 x-defines:
   service-common: &service-common-ref
-    networks: [network_cluster]
+    networks: [network_swarm]
     restart: on-failure
   env-common: &env-common-ref
     NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,::1}
@@ -204,7 +204,7 @@ services:
   # pve-exporter:
   #   # 3.0之后改了结构，只能固定到2.3.1
   #   image: prompve/prometheus-pve-exporter:2.3.1
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   restart: on-failure
   #   ports:
   #     - 9221:9221
@@ -369,7 +369,7 @@ services:
   # ------------------------------------------------------------
   # elk:
   #   image: sebp/elk:7.14.1
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   restart: on-failure
   #   # ports:
   #   #   - "5601:5601"
@@ -435,7 +435,7 @@ services:
   # logspout-vm:
   #   image: gliderlabs/logspout:v3.2.14
   #   command: syslog+tcp://elk:5000
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   # environment:
   #   #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
   #   #   tag: "<custom tag>"
@@ -460,7 +460,7 @@ services:
   # logspout-router:
   #   image: gliderlabs/logspout:v3.2.14
   #   command: syslog+tcp://192.168.11.117:5000
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   # environment:
   #   #   SYSLOG_STRUCTURED_DATA: "<Loggly Customer Token>@41058"
   #   #   tag: "<custom tag>"
@@ -484,7 +484,7 @@ services:
 
   # swarm-log:
   #   image: bekt/logspout-logstash:latest
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   volumes:
   #     # Logspout reads this in and attaches it to the log
   #     - /etc/hostname:/etc/host_hostname:ro
@@ -511,7 +511,7 @@ services:
 
   # fluentd:
   #   image: ruanbekker/fluentd-elasticsearch
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   user: root
   #   environment:
   #     FLUENTD_CONF: 'fluent.conf'
@@ -542,7 +542,7 @@ services:
   #     - '--path.rootfs=/rootfs'
   #     - '--path.sysfs=/host/sys'
   #     - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   restart: on-failure
   #   ports:
   #     - 9100:9100
@@ -569,7 +569,7 @@ services:
   #   volumes:
   #       - /var/run/docker.sock:/var/run/docker.sock
   #   entrypoint: ["/bin/sh","-c"]
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   deploy:
   #     mode: global
   #     restart_policy:
@@ -602,7 +602,7 @@ services:
   #   # image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/cadvisor:v0.47.3
   #   # image: registry.${DOMAIN_SWARM}:${EXTERNAL_PORT}/cadvisor:v0.44.0
   #   image: starlingx/cadvisor:master-debian-stable-latest
-  #   networks: [network_cluster]
+  #   networks: [network_swarm]
   #   devices:
   #     - /dev/kmsg
   #   restart: on-failure
@@ -623,7 +623,7 @@ services:
   #         - node.platform.os == linux
 
 networks:
-  network_cluster:
+  network_swarm:
     external: true
 
 configs:
